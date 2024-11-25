@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 public class LoadMap : MonoBehaviour
 {
     // tilemap & tile sprite variables
-    [Header("Tilemap & Tile Variables")]
+    [Header("Tilemap & Tiles")]
     public Tilemap myTilemap;
     public TileBase _wall;
     public TileBase _door;
@@ -55,7 +55,7 @@ public class LoadMap : MonoBehaviour
         LoadPremadeMap();
     }
 
-    string LoadPremadeMap()
+    public string LoadPremadeMap()
     {
         Debug.Log("reading text file");
         string pathToFile = ($"{Application.dataPath}/2DMapStrings/TestMap.txt"); // in the Unity Assets folder, then path
@@ -64,7 +64,7 @@ public class LoadMap : MonoBehaviour
         for (int y = myLines.Length - 1; y>= 0; y--) // from mylines.length until it reaches 0 (to reverse it), still not flipped, maybe myLines ?
         {
             string myLine = myLines[y]; // so each line gets read in proper order one-by-one
-            Debug.Log($"Reading Line: {myLine} at {y}");
+            Debug.Log($"Reading Line: {myLine} at {-y}");
 
             for (int x = 0; x < myLine.Length; x++)
             {   // on x axis, so accross the line to idv. char, read & assign each one
@@ -75,31 +75,31 @@ public class LoadMap : MonoBehaviour
                  && y < myMap.GetLength(1))
                 {
                     myMap[x, y] = myChar;
-                    // since ConvertMapToTilemap() references GenerateMapString() for it's data, I just convert directly
+                    
                     if (myChar == '#')
                     {
-                        Debug.Log($"Reading Wall char at: {x} , {y}");
-                        myTilemap.SetTile(new Vector3Int(x, y, 0), _wall);
+                        Debug.Log($"Placing Wall char at: {x} , {-y}");
+                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _wall); // -y to follow how the lines are read in reverse
                     }
                     if (myChar == 'O')
                     {
-                        Debug.Log($"Reading Door char at: {x} , {y}");
-                        myTilemap.SetTile(new Vector3Int(x, y, 0), _door);
+                        Debug.Log($"Placing Door char at: {x} , {-y}");
+                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _door);
                     }
                     if (myChar == '*')
                     {
-                        Debug.Log($"Reading Chest char at: {x} , {y}");
-                        myTilemap.SetTile(new Vector3Int(x, y, 0), _chest);
+                        Debug.Log($"Placing Chest char at: {x} , {-y}");
+                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _chest);
                     }
                     if (myChar == '@')
                     {
-                        Debug.Log($"Reading Enemy char at: {x} , {y}");
-                        myTilemap.SetTile(new Vector3Int(x, y, 0), _enemy);
+                        Debug.Log($"Placing Enem-y char at: {x} , {-y}");
+                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _enemy);
                     }
                     if (myChar == ' ')
                     {
-                        Debug.Log($"Reading None char at: {x} , {y}");
-                        myTilemap.SetTile(new Vector3Int(x, y, 0), _none);
+                        Debug.Log($"Placing None char at: {x} , {-y}");
+                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _none);
                     }
                 }
             }

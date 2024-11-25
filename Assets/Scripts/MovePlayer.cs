@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 public class MovePlayer : MonoBehaviour
 {
     public LoadMap LoadMap;
+    //public Combat combat;
 
     public Tilemap myTilemap;
     public Transform movePoint;
@@ -45,14 +46,18 @@ public class MovePlayer : MonoBehaviour
             tileAtPosition == chestTile ||
             tileAtPosition == enemyTile)
         {
-            Debug.Log($"Cannot move on {tileAtPosition} at: {x}, {y}");
+            //Debug.Log($"Cannot move on {tileAtPosition} at: {x}, {y}");
             return false;
         }
         // you can move on 'none' tiles
         if (tileAtPosition == noneTile || tileAtPosition == checkerTile)
         {
-            Debug.Log($"CAN move on {tileAtPosition} at: {x}, {y}");
+            //Debug.Log($"CAN move on {tileAtPosition} at: {x}, {y}");
             return true;
+        }
+        if (tileAtPosition == enemyTile)
+        {
+            // combat.PlayerAttack(); // get reference to combat script method for player attack
         }
         return false;
     }
@@ -71,8 +76,8 @@ public class MovePlayer : MonoBehaviour
             vertical = 0;
         }
         // increment target based on player pos
-        var targetX = playerX;
-        var targetY = playerY;
+        var targetX = (int)playerX;
+        var targetY = (int)playerY;
 
         if (horizontal > 0) targetX += 1; // move RIGHT
         else if (horizontal < 0) targetX -= 1; // move LEFT
@@ -83,8 +88,8 @@ public class MovePlayer : MonoBehaviour
         // Check if the target tile is walkable
         if (CanMove(targetX, targetY))
         {   // stores previous pos as player pos
-            var previousX = playerX;
-            var previousY = playerY;
+            var previousX = (int)playerX;
+            var previousY = (int)playerY;
 
             // Update the move point's position using targetX,Y var previously selected
             movePoint.position = new Vector3(targetX , targetY * tileSize, movePoint.position.z);
@@ -93,18 +98,28 @@ public class MovePlayer : MonoBehaviour
             //DrawPlayer(previousX, previousY, targetX, targetY);
         }
     }
-    //public void DrawPlayer(float previousX, float previousY, float currentX, float currentY)
-    //{
-    //    TileBase noneTile = LoadMap._none;
-    //    TileBase checkerTile = LoadMap._checker;
-    //    // Replace the previous tile with none
-    //    if (myTilemap.HasTile(new Vector3Int(previousX, previousY, 0)))
-    //    {
-    //        myTilemap.SetTile(new Vector3Int(previousX, previousY, 0), noneTile);
-    //    }
+    void CheckWinTIle()
+    {
+        // if player detects _winTile
+        // reset position + get next map
+    }
+    void ResetPosition()
+    {
+        // set player to start position whenever completing a level
+        // tile closest to 0,0 (middle or bottom left?)
+    }
+    public void DrawPlayer(int previousX, int previousY, int currentX, int currentY)
+    {
+        TileBase noneTile = LoadMap._none;
+        TileBase checkerTile = LoadMap._checker;
+        // Replace the previous tile with none
+        if (myTilemap.HasTile(new Vector3Int(previousX, previousY, 0))) // can't convert float to int
+        {
+            myTilemap.SetTile(new Vector3Int(previousX, previousY, 0), noneTile);
+        }
 
-    //    // Place the player tile at the new position
-    //    myTilemap.SetTile(new Vector3Int(currentX, currentY, 0), playerTile);
-    //}
+        // Place the player tile at the new position
+        myTilemap.SetTile(new Vector3Int(currentX, currentY, 0), playerTile);
+    }
 }
 // make a SetToStart() that finds the tile nearest to 0,0 and draws the player, call at the start -- irrelevant ??
