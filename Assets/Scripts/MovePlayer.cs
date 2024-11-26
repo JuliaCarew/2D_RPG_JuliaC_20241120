@@ -5,121 +5,137 @@ using UnityEngine.Tilemaps;
 
 public class MovePlayer : MonoBehaviour
 {
-    public LoadMap LoadMap;
+    public LoadMap loadMap;
     //public Combat combat;
-
     public Tilemap myTilemap;
     public Transform movePoint;
+    public GameObject playerSpawnPoint;
     public float tileSize = 0.08f;
     // need to snap player's position to tile, maybe by dividing position by tileSize !!
 
     // updating the player sprite
     public TileBase playerTile;
-    private TileBase previousTile;
 
     void Start()
     {
         movePoint.parent = null;  // allows movepoint to dictate player's direction/ can be moved on it's own    
+        ResetPosition();
     }
     void Update()
     {
         MovePosition();
     }
-    public bool CanMove(float x, float y)
+    public bool CanMove(int x, int y)
     {
         // setting new variable to determine current position
-        var gridPosition = new Vector3(x, y, 0);
-        // checking tiles, needs to ref. MapBehaviors _tiles to collide correctly
-        TileBase wallTile = LoadMap._wall;
-        TileBase doorTile = LoadMap._door;
-        TileBase chestTile = LoadMap._chest;
-        TileBase enemyTile = LoadMap._enemy;
-        TileBase noneTile = LoadMap._none;
-        TileBase checkerTile = LoadMap._checker;
-
+        Vector3Int cellPosition = new Vector3Int(x, y, 0);      
         // Get the tile at the specified grid position
-        TileBase tileAtPosition = myTilemap.GetTile(myTilemap.WorldToCell(gridPosition));
+        TileBase tileAtPosition = myTilemap.GetTile(cellPosition);
+
+        Debug.Log($"Checking tile at ({x}, {y}): {tileAtPosition}");
+
+        // Allow movement if the tile is null (empty) or is explicitly _none
+        if (tileAtPosition == null || tileAtPosition == loadMap._none)
+        {
+            Debug.Log("CanWalk");
+            return true; 
+        }
 
         // cannot move on wall, chest, door, or enemy tiles
-        if (tileAtPosition == wallTile ||
-            tileAtPosition == doorTile ||
-            tileAtPosition == chestTile ||
-            tileAtPosition == enemyTile)
+        if (tileAtPosition == loadMap._wall ||
+            tileAtPosition == loadMap._door ||
+            tileAtPosition == loadMap._chest)
         {
-            //Debug.Log($"Cannot move on {tileAtPosition} at: {x}, {y}");
+            Debug.Log($"Blocked tile at ({x}, {y}): {tileAtPosition}");
             return false;
         }
-        // you can move on 'none' tiles
-        if (tileAtPosition == noneTile || tileAtPosition == checkerTile)
-        {
-            //Debug.Log($"CAN move on {tileAtPosition} at: {x}, {y}");
-            return true;
-        }
-        if (tileAtPosition == enemyTile)
+        if (tileAtPosition == loadMap._enemy)
         {
             // combat.PlayerAttack(); // get reference to combat script method for player attack
         }
+        if (tileAtPosition == loadMap._winTile)
+        {
+            LevelComplete();
+            return false;
+        }
         return false;
     }
+
+    // set player to start position whenever completing a level
+    void ResetPosition()
+    {
+        Vector3 spawnPosition = playerSpawnPoint.transform.position;
+        movePoint.position = new Vector3(
+            Mathf.Round(spawnPosition.x / tileSize) * tileSize,
+            Mathf.Round(spawnPosition.y / tileSize) * tileSize,
+            movePoint.position.z
+        );
+        DrawPlayer(0, 0, 
+            Mathf.RoundToInt(spawnPosition.x / tileSize), 
+            Mathf.RoundToInt(spawnPosition.y / tileSize)
+        );   
+        //Debug.Log($"Spawn position set to {spawnPosition}"); 
+    }
+
     public void MovePosition()
     {
         // set player's current pos using movePoint & tileSize
-        var playerX = movePoint.position.x / tileSize; // need to keep decimal bc its a small number but cast to int
-        var playerY = movePoint.position.y / tileSize; // problems because this is rounding to 1 !! 
+        int playerX = Mathf.RoundToInt(movePoint.position.x / tileSize); // need to keep decimal bc its a small number but cast to int
+        int playerY = Mathf.RoundToInt(movePoint.position.y / tileSize); // problems because this is rounding to 1 !! 
         // moving on X, Y
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
         // can only move vertically/ horizontally, not diagonally
-        if (horizontal != 0)
-        {
-            vertical = 0;
-        }
+        if (horizontal != 0) vertical = 0;
+        if (vertical != 0) horizontal = 0;
+        Debug.Log($"Input detected: Horizontal={horizontal}, Vertical={vertical}");
+
         // increment target based on player pos
-        var targetX = (int)playerX;
-        var targetY = (int)playerY;
+        int targetX = playerX;
+        int targetY = playerY;
 
-        if (horizontal > 0) targetX += 1; // move RIGHT
-        else if (horizontal < 0) targetX -= 1; // move LEFT
+        if (horizontal > 0) targetX += 1;  // Move right
+        else if (horizontal < 0) targetX -= 1;  // Move left
 
-        if (vertical > 0) targetY += 1; // move UP
-        else if (vertical < 0) targetY -= 1; // move DOWN
+        if (vertical > 0) targetY += 1;  // Move up
+        else if (vertical < 0) targetY -= 1;  // Move down
+
+        //Debug.Log($"MovePosition target: ({targetX}, {targetY})");
 
         // Check if the target tile is walkable
         if (CanMove(targetX, targetY))
-        {   // stores previous pos as player pos
-            var previousX = (int)playerX;
-            var previousY = (int)playerY;
-
+        {   
             // Update the move point's position using targetX,Y var previously selected
-            movePoint.position = new Vector3(targetX , targetY * tileSize, movePoint.position.z);
-
-            // Draw the player at the new position
-            //DrawPlayer(previousX, previousY, targetX, targetY);
+            movePoint.position = new Vector3(targetX * tileSize, targetY * tileSize, movePoint.position.z);     
+            DrawPlayer(playerX, playerY, targetX, targetY);  // Draw the player at the new position
+            Debug.Log($"Player moved to new position: {targetX}, {targetY}");
+        }
+        else
+        {
+            Debug.Log($"Cannot move to position: {targetX}, {targetY}");
         }
     }
-    void CheckWinTIle()
+    // if player detects _winTile, reset position + get next map
+    void LevelComplete()
     {
-        // if player detects _winTile
-        // reset position + get next map
+        Debug.Log("Level complete! Getting a new map...");
+        loadMap.LoadPremadeMap();
+        ResetPosition();
     }
-    void ResetPosition()
-    {
-        // set player to start position whenever completing a level
-        // tile closest to 0,0 (middle or bottom left?)
-    }
+    
     public void DrawPlayer(int previousX, int previousY, int currentX, int currentY)
     {
-        TileBase noneTile = LoadMap._none;
-        TileBase checkerTile = LoadMap._checker;
-        // Replace the previous tile with none
-        if (myTilemap.HasTile(new Vector3Int(previousX, previousY, 0))) // can't convert float to int
+        TileBase noneTile = loadMap._none;
+        Vector3Int previousPosition = new Vector3Int(previousX, previousY, 0);
+        Vector3Int currentPosition = new Vector3Int(currentX, currentY, 0);
+
+        if (myTilemap.HasTile(previousPosition)) 
         {
-            myTilemap.SetTile(new Vector3Int(previousX, previousY, 0), noneTile);
+            myTilemap.SetTile(previousPosition, noneTile);
         }
 
         // Place the player tile at the new position
-        myTilemap.SetTile(new Vector3Int(currentX, currentY, 0), playerTile);
+        myTilemap.SetTile(currentPosition, playerTile);
     }
 }
-// make a SetToStart() that finds the tile nearest to 0,0 and draws the player, call at the start -- irrelevant ??

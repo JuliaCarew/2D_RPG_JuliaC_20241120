@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Random = UnityEngine.Random;
+using System.IO;
 
 public class LoadMap : MonoBehaviour
 {
@@ -14,7 +14,8 @@ public class LoadMap : MonoBehaviour
     public TileBase _chest;
     public TileBase _enemy;
     public TileBase _none;
-    public TileBase _checker;
+    public TileBase _winTile;
+
 
     // Tile variables
     [Header("Tile String Characters")]
@@ -24,43 +25,45 @@ public class LoadMap : MonoBehaviour
     public string enemy = "@";
     public string none = " ";
 
-    // map grid (20X20)
-    public int[,] myMap = new int[22, 12]; // !!!
+    [Header("Map Center Reference")]
+    public Transform mapCenter;
 
-    // mapping each spawnable object to an integer (0-5) as a method - Edit: VERY USEFUL
-    private Dictionary<string, int> GetTileMapping()
-    {
-        return new Dictionary<string, int>
-        {
-             { wall, 1 },
-             { door, 2 },
-             { chest, 3 },
-             { enemy, 4 },
-             { none, 0 }
-        };
-    }
-
-    // need to iterate through list of all maps at random
-    // need to set the tiles in the center of the map
-    int PickRandomMap()
-    {
-        return 0;
-    }
-
-    // Start is called before the first frame update
+    [Header("Map Dimensions")]
+    public int mapWidth;
+    public int mapHeight;
     void Start()
     {
-        Debug.Log("Loading premade map");
-        //myTilemap.ClearAllTiles();
+        Debug.Log("Loading premade map...");
         LoadPremadeMap();
     }
 
-    public string LoadPremadeMap()
+    public void LoadPremadeMap()
     {
-        Debug.Log("reading text file");
-        string pathToFile = ($"{Application.dataPath}/2DMapStrings/TestMap.txt"); // in the Unity Assets folder, then path
-        string[] myLines = System.IO.File.ReadAllLines(pathToFile); // create string from all idv. lines read
+        // get path to files
+        //Debug.Log("reading text file");
+        string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, pick rand file from these
+        string[] mapFiles = Directory.GetFiles(folderPath, "*.txt"); // Get all text files
 
+        // get random text file
+        int randomIndex = Random.Range(0, mapFiles.Length);
+        string selectedFile = mapFiles[randomIndex];
+        Debug.Log($"Selected map {selectedFile}");
+
+        // read the text
+        string[] myLines = File.ReadAllLines(selectedFile); // create string from all idv. lines read
+        mapHeight = myLines.Length;
+        mapWidth = myLines[0].Length;
+
+        myTilemap.ClearAllTiles();
+        // centering the map
+        // converts the mapCenter position to integer tilemap coordinates
+        Vector3Int mapOrigin = new Vector3Int(
+            Mathf.RoundToInt(mapCenter.position.x) - mapWidth / 2,
+            Mathf.RoundToInt(mapCenter.position.y) - mapHeight / 2,
+            0
+        );
+
+        // placing tiles
         for (int y = myLines.Length - 1; y>= 0; y--) // from mylines.length until it reaches 0 (to reverse it), still not flipped, maybe myLines ?
         {
             string myLine = myLines[y]; // so each line gets read in proper order one-by-one
@@ -70,47 +73,34 @@ public class LoadMap : MonoBehaviour
             {   // on x axis, so accross the line to idv. char, read & assign each one
                 char myChar = myLine[x];
                 Debug.Log($"Reading Char: {myChar} at {x}");
-
-                if (x < myMap.GetLength(0)
-                 && y < myMap.GetLength(1))
-                {
-                    myMap[x, y] = myChar;
+                Vector3Int position = new Vector3Int(x, y, 0) + mapOrigin;
                     
-                    if (myChar == '#')
-                    {
-                        Debug.Log($"Placing Wall char at: {x} , {-y}");
-                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _wall); // -y to follow how the lines are read in reverse
-                    }
-                    if (myChar == 'O')
-                    {
-                        Debug.Log($"Placing Door char at: {x} , {-y}");
-                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _door);
-                    }
-                    if (myChar == '*')
-                    {
-                        Debug.Log($"Placing Chest char at: {x} , {-y}");
-                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _chest);
-                    }
-                    if (myChar == '@')
-                    {
-                        Debug.Log($"Placing Enem-y char at: {x} , {-y}");
-                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _enemy);
-                    }
-                    if (myChar == ' ')
-                    {
-                        Debug.Log($"Placing None char at: {x} , {-y}");
-                        myTilemap.SetTile(new Vector3Int(x, -y, 0), _none);
-                    }
+                if (myChar == '#')
+                {
+                    //Debug.Log($"Placing Wall char at: {x} , {-y}");
+                    myTilemap.SetTile(position, _wall); // -y to follow how the lines are read in reverse
+                }
+                if (myChar == 'O')
+                {
+                    //Debug.Log($"Placing Door char at: {x} , {-y}");
+                    myTilemap.SetTile(position, _door);
+                }
+                if (myChar == '*')
+                {
+                    //Debug.Log($"Placing Chest char at: {x} , {-y}");
+                    myTilemap.SetTile(position, _chest);
+                }
+               if (myChar == '@')
+                {
+                    //Debug.Log($"Placing Enem-y char at: {x} , {-y}");
+                    myTilemap.SetTile(position, _enemy);
+                }
+                if (myChar == ' ')
+                {
+                    //Debug.Log($"Placing None char at: {x} , {-y}");
+                    myTilemap.SetTile(position, null);
                 }
             }
         }
-        return ($"{myLines}");
     }
 }
-// map starts writing tiles at the bottom left but in the text file that is the top left char
-// so it ends up being flipped horizontally
-// need to start placing at top left until top right
-// then increment Y
-// replace none chars with null instead of the _none tile
-// set the first tile to myMap's height
-// not working, needs to READ the text file in reverse, not when writing

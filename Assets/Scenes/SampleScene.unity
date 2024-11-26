@@ -663,6 +663,37 @@ Transform:
   - {fileID: 1897752650}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &536474485
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 536474486}
+  m_Layer: 0
+  m_Name: Player Spawnpoint
+  m_TagString: Untagged
+  m_Icon: {fileID: -5397416234189338067, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &536474486
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536474485}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.05, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &677648855
 GameObject:
   m_ObjectHideFlags: 0
@@ -1040,7 +1071,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1472508161
 Transform:
   m_ObjectHideFlags: 0
@@ -1507,12 +1538,15 @@ MonoBehaviour:
   _chest: {fileID: 11400000, guid: 716da1dfd4e09e448ab44f1b77312253, type: 2}
   _enemy: {fileID: 11400000, guid: 9bbf7025f9e46bf4ba9e4aae17ed1ee2, type: 2}
   _none: {fileID: 11400000, guid: 4e196fed21317a844923d52fd5cf3e12, type: 2}
-  _checker: {fileID: 0}
+  _winTile: {fileID: 11400000, guid: 3d9628238c8faf446b67fe7760650faa, type: 2}
   wall: '#'
   door: O
   chest: '*'
   enemy: '@'
   none: ' '
+  mapCenter: {fileID: 2031121562}
+  mapWidth: 0
+  mapHeight: 0
 --- !u!1 &1930173670
 GameObject:
   m_ObjectHideFlags: 0
@@ -1729,9 +1763,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2a4eedd3d54cca4e82b0e35c2abb95d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LoadMap: {fileID: 1897752651}
+  loadMap: {fileID: 1897752651}
   myTilemap: {fileID: 2097187412}
   movePoint: {fileID: 2129754075}
+  playerSpawnPoint: {fileID: 536474485}
   tileSize: 0.08
   playerTile: {fileID: 11400000, guid: ec6dbb9422c9a884e8d6403781390e03, type: 2}
 --- !u!4 &1988782450
@@ -1748,6 +1783,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2129754075}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2031121561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2031121562}
+  m_Layer: 0
+  m_Name: Map Center
+  m_TagString: Untagged
+  m_Icon: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2031121562
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031121561}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1.2239, y: 1.2239, z: 1.2239}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2097187409
@@ -5209,6 +5275,10 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: 4e196fed21317a844923d52fd5cf3e12, type: 2}
   - m_RefCount: 72
     m_Data: {fileID: 11400000, guid: feff2b46eb74b0c468fc199d019bded6, type: 2}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   m_TileSpriteArray:
   - m_RefCount: 76
     m_Data: {fileID: 1629974147, guid: 0ade210f93391c94397d131b1bc57551, type: 3}
@@ -5216,6 +5286,10 @@ Tilemap:
     m_Data: {fileID: -1899910101, guid: 0ade210f93391c94397d131b1bc57551, type: 3}
   - m_RefCount: 72
     m_Data: {fileID: -517944571, guid: 0ade210f93391c94397d131b1bc57551, type: 3}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   m_TileMatrixArray:
   - m_RefCount: 336
     m_Data:
@@ -5436,3 +5510,5 @@ SceneRoots:
   - {fileID: 296465574}
   - {fileID: 735627891}
   - {fileID: 1064119498}
+  - {fileID: 2031121562}
+  - {fileID: 536474486}
