@@ -14,7 +14,7 @@ public class LoadMap : MonoBehaviour
     public TileBase _chest;
     public TileBase _enemy;
     public TileBase _none;
-    public TileBase _winTile;
+    public TileBase _win;
 
 
     // Tile variables
@@ -24,6 +24,7 @@ public class LoadMap : MonoBehaviour
     public string chest = "*";
     public string enemy = "@";
     public string none = " ";
+    public string win = "%";
 
     [Header("Map Center Reference")]
     public Transform mapCenter;
@@ -33,7 +34,7 @@ public class LoadMap : MonoBehaviour
     public int mapHeight;
     void Start()
     {
-        Debug.Log("Loading premade map...");
+        //Debug.Log("Loading premade map...");
         LoadPremadeMap();
     }
 
@@ -67,38 +68,37 @@ public class LoadMap : MonoBehaviour
         for (int y = myLines.Length - 1; y>= 0; y--) // from mylines.length until it reaches 0 (to reverse it), still not flipped, maybe myLines ?
         {
             string myLine = myLines[y]; // so each line gets read in proper order one-by-one
-            Debug.Log($"Reading Line: {myLine} at {-y}");
+            //Debug.Log($"Reading Line: {myLine} at {-y}");
 
             for (int x = 0; x < myLine.Length; x++)
             {   // on x axis, so accross the line to idv. char, read & assign each one
                 char myChar = myLine[x];
-                Debug.Log($"Reading Char: {myChar} at {x}");
+                //Debug.Log($"Reading Char: {myChar} at {x}");
                 Vector3Int position = new Vector3Int(x, y, 0) + mapOrigin;
                     
-                if (myChar == '#')
-                {
+                if (myChar == '#'){
                     //Debug.Log($"Placing Wall char at: {x} , {-y}");
                     myTilemap.SetTile(position, _wall); // -y to follow how the lines are read in reverse
                 }
-                if (myChar == 'O')
-                {
+                if (myChar == 'O'){
                     //Debug.Log($"Placing Door char at: {x} , {-y}");
                     myTilemap.SetTile(position, _door);
                 }
-                if (myChar == '*')
-                {
+                if (myChar == '*'){
                     //Debug.Log($"Placing Chest char at: {x} , {-y}");
                     myTilemap.SetTile(position, _chest);
                 }
-               if (myChar == '@')
-                {
+               if (myChar == '@'){
                     //Debug.Log($"Placing Enem-y char at: {x} , {-y}");
                     myTilemap.SetTile(position, _enemy);
                 }
-                if (myChar == ' ')
-                {
+                if (myChar == ' '){
                     //Debug.Log($"Placing None char at: {x} , {-y}");
                     myTilemap.SetTile(position, null);
+                }
+                if (myChar == '%'){
+                    //Debug.Log($"Placing Win char at: {x} , {-y}");
+                    myTilemap.SetTile(position, _win);
                 }
             }
         }

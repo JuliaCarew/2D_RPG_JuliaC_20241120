@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    public LoadMap LoadMap;
-    //myTilemap = LoadMap.myTilemap; // reference my tilemap from LoadMap
+    //public LoadMap LoadMap;
+    public MovePlayer movePlayer;
 
     [Header("Pause Menu")]
     public GameObject pausePanel;
@@ -22,7 +22,6 @@ public class SceneLoader : MonoBehaviour
         pauseButton.SetActive(false);
         continueButton.SetActive(false);
         QuitButton.SetActive(false);
-
     }
     // ---------- Main Menu ----------
     public void QuitGame()
@@ -75,8 +74,7 @@ public class SceneLoader : MonoBehaviour
     public void Restart()
     {
         Debug.Log("Restart button pressed");
-        //myTilemap.ClearAllTiles();
-        // load current map
-        //LoadMap.LoadPremadeMap(); // get current ? (null reference exception error)
+        movePlayer.ResetPosition();
     }
 }
+// FIXME: after reloading game scene, player can only move once.
