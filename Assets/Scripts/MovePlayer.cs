@@ -5,16 +5,18 @@ using UnityEngine.Tilemaps;
 
 public class MovePlayer : MonoBehaviour
 {
+    [Header("References")]
     public LoadMap loadMap;
     public Combat combat;
     public Tilemap myTilemap;
+
+    [Header("Transform & GameObjects")]
     public Transform movePoint;
     public GameObject playerSpawnPoint;
+
     public float tileSize = 0.08f;
     // need to snap player's position to tile, maybe by dividing position by tileSize !!
-
-    // updating the player sprite
-    public TileBase playerTile;
+    public TileBase playerTile; // updating the player sprite
 
     void Start()
     {
@@ -124,7 +126,7 @@ public class MovePlayer : MonoBehaviour
         loadMap.LoadPremadeMap();
         ResetPosition();
     }
-    
+    // setting previous position to null, curent position to playertile
     void DrawPlayer(int previousX, int previousY, int currentX, int currentY)
     {
         //TileBase noneTile = loadMap._none;

@@ -16,3 +16,5 @@ public class EnemyMove : MonoBehaviour
         
     }
 }
+// enemies move in a random direction, maybe give them the chance to move towards player?
+// need to have AI pathing, line of sight? take player radius from vector game & give it to enemies?

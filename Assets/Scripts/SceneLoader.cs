@@ -6,7 +6,9 @@ using UnityEngine.SceneManagement;
 public class SceneLoader : MonoBehaviour
 {
     //public LoadMap LoadMap;
+    [Header("References")]
     public MovePlayer movePlayer;
+    public LoadMap loadMap;
 
     [Header("Pause Menu")]
     public GameObject pausePanel;
@@ -67,14 +69,20 @@ public class SceneLoader : MonoBehaviour
     public void QuitToMenu()
     {
         Debug.Log("Quit button pressed");
-        SceneManager.LoadScene(0); // load MainMenu
+        SceneManager.LoadScene(0); // load MainMenu, pause panel not assigned
     }
 
     // ---------- resets map so player can restart level ----------
     public void Restart()
     {
         Debug.Log("Restart button pressed");
+        movePlayer.ResetPosition(); // need to also erase previous position
+    }
+    public void NextNevel()
+    {
+        Debug.Log("Loading next map...");
         movePlayer.ResetPosition();
+        loadMap.LoadPremadeMap();
     }
 }
-// FIXME: after reloading game scene, player can only move once.
+// FIXME: after reloading game scene, player can only move once. press continue to reset that bug.

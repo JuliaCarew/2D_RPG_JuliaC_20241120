@@ -5,20 +5,17 @@ using UnityEngine.Tilemaps;
 
 public class Combat : MonoBehaviour
 {
-    public List<Vector3Int> enemyPositions = new List<Vector3Int>(); // generating list of all enemies in map
-    public bool enemyTurn; // enemies take turns when true, player takes turn when false
-    // reference healthsystem 
-    public int currentHealth;
-    public int maxHealth = 50;
-    //int rndDamage = Random.Range(5,12);
-    public int enemyDamage = 5; // Random.Range(5,10);
-    public int playerDamage = 10; // Random.Range(7,12);
+    [Header("References")]
     public MovePlayer movePlayer;
-    public Tilemap tilemap;
+    public LoadMap loadMap;
+    public Tilemap myTilemap;
+
+    public List<Vector3Int> enemies = new List<Vector3Int>(); // generating list of all enemies in map
+    // this list is not counting the enemies generated in the map ? they would have to be placed beforehand
+    public bool enemyTurn; // enemies take turns when true, player takes turn when false
 
     void Start()
     {
-        currentHealth = maxHealth;
         enemyTurn = false;
     }
 
@@ -30,13 +27,38 @@ public class Combat : MonoBehaviour
         }
     }
 
+    void CheckNeighbor(int x, int y)
+    {
+        int count = 0;
+        // make array in a grid ranging from -1 to 1 ( starts from bottom left)
+        for (int check_x = -1; check_x < 2; check_x++)
+        {
+            for (int check_y = -1; check_y < 2; check_y++)
+            { // so the loop doesnt count the current cell/ itself
+                Vector3Int cellPosition = new Vector3Int(x, y, 0);
+                TileBase tileAtPosition = myTilemap.GetTile(cellPosition);
+
+                if (check_y == 0 && check_x == 0)
+                {
+                    continue;
+                }
+                if (tileAtPosition == movePlayer.playerTile)
+                {
+                    EnemyTurn();
+                    //TakeDamage();
+                    count++;
+                }
+            }
+        }
+    }
+
     public void PlayerTookTurn(Vector3Int playerPosition)
     {
         Debug.Log("Player's turn");
 
-        foreach (var enemyPos in enemyPositions)
+        foreach (var enemyPos in enemies)
         {
-            if (Vector3Int.Distance(playerPosition, enemyPos) == 1) // Adjacent tiles
+            if (Vector3Int.Distance(playerPosition, enemyPos) == 1) 
             {
                 Debug.Log("Player attacks enemy!");
                 AttackEnemy(enemyPos);
@@ -50,48 +72,28 @@ public class Combat : MonoBehaviour
     {
         Debug.Log("Enemy's turn");
 
-         for (int i = enemyPositions.Count - 1; i >= 0; i--)
+        for (int i = enemies.Count - 1; i >= 0; i--)
         {
-            Vector3Int enemyPos = enemyPositions[i];
-            Vector3Int playerPosition = tilemap.WorldToCell(movePlayer.movePoint.position);
+            //Vector3Int enemyPos = enemyPositions[i];
+            //Vector3Int playerPosition = myTilemap.WorldToCell(movePlayer.movePoint.position);
             
-            if (Vector3Int.Distance(enemyPos, playerPosition) == 1)
-            {
-                Debug.Log("Enemy attacks player!");
-                TakeDamage(enemyDamage);
-                continue; // Enemy doesn't move if it attacks
-            }
+            //if (Vector3Int.Distance(enemyPos, playerPosition) == 1)
+            //{
+            //    Debug.Log("Enemy attacks player!");
+            //    TakeDamage(enemyDamage);
+            //    continue; // Enemy doesn't move if it attacks
+            //}
 
             // Otherwise, path toward the player
-            MoveEnemyToPlayer(i, playerPosition);
+            //MoveEnemyToPlayer(i, playerPosition);
         }
         enemyTurn = false;
-    }
-    private void MoveEnemyToPlayer(int enemyIndex, Vector3Int playerPosition)
-    {
-
     }
     void AttackEnemy(Vector3Int enemyPosition)
     {
         Debug.Log($"Damaging enemy at {enemyPosition}!");
-        enemyPositions.Remove(enemyPosition);
-        tilemap.SetTile(enemyPosition, null);
+        enemies.Remove(enemyPosition);
+        //tilemap.SetTile(enemyPosition, null);
         // lerp between furthest walkable tiles
-    }
-    private void TakeDamage(int damage)
-    {
-        currentHealth -= damage;
-        Debug.Log($"Player takes {damage} damage! Current health: {currentHealth}");
-
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-    }
-    private void Die()
-    {
-        Debug.Log("Player died :(");
-        // set active false
-        //tilemap.SetTile(null);
     }
 }

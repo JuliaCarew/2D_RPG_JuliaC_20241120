@@ -6,7 +6,12 @@ using System.IO;
 
 public class LoadMap : MonoBehaviour
 {
-    // tilemap & tile sprite variables
+    [Header("References")]
+    public Combat combat;
+
+    [Header("Transform & GameObjects")]
+    public Transform mapCenter;
+
     [Header("Tilemap & Tiles")]
     public Tilemap myTilemap;
     public TileBase _wall;
@@ -16,8 +21,6 @@ public class LoadMap : MonoBehaviour
     public TileBase _none;
     public TileBase _win;
 
-
-    // Tile variables
     [Header("Tile String Characters")]
     public string wall = "#";
     public string door = "O";
@@ -25,9 +28,6 @@ public class LoadMap : MonoBehaviour
     public string enemy = "@";
     public string none = " ";
     public string win = "%";
-
-    [Header("Map Center Reference")]
-    public Transform mapCenter;
 
     [Header("Map Dimensions")]
     public int mapWidth;
@@ -60,7 +60,7 @@ public class LoadMap : MonoBehaviour
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
             Mathf.RoundToInt(mapCenter.position.x) - mapWidth / 2,
-            Mathf.RoundToInt(mapCenter.position.y) - mapHeight / 2,
+            Mathf.RoundToInt((mapCenter.position.y) - mapHeight / 2) + 7, // + y 0.5
             0
         );
 
@@ -74,7 +74,7 @@ public class LoadMap : MonoBehaviour
             {   // on x axis, so accross the line to idv. char, read & assign each one
                 char myChar = myLine[x];
                 //Debug.Log($"Reading Char: {myChar} at {x}");
-                Vector3Int position = new Vector3Int(x, y, 0) + mapOrigin;
+                Vector3Int position = new Vector3Int(x, -y, 0) + mapOrigin;
                     
                 if (myChar == '#'){
                     //Debug.Log($"Placing Wall char at: {x} , {-y}");
@@ -91,6 +91,7 @@ public class LoadMap : MonoBehaviour
                if (myChar == '@'){
                     //Debug.Log($"Placing Enem-y char at: {x} , {-y}");
                     myTilemap.SetTile(position, _enemy);
+                    //combat.enemies.Add(position); // FIXME: add enemy to the list for combat recognition
                 }
                 if (myChar == ' '){
                     //Debug.Log($"Placing None char at: {x} , {-y}");
