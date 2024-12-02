@@ -15,8 +15,13 @@ public class SceneLoader : MonoBehaviour
     public GameObject pauseButton;
     public GameObject continueButton;
     public GameObject QuitButton;
+
     [Header("Restart Button")]
     public GameObject restartButton;
+
+    [Header("Win Game")]
+    public GameObject winScreen;
+
 
     private void Start()
     {
@@ -24,18 +29,9 @@ public class SceneLoader : MonoBehaviour
         pauseButton.SetActive(false);
         continueButton.SetActive(false);
         QuitButton.SetActive(false);
+        winScreen.SetActive(false);
     }
-    // ---------- Main Menu ----------
-    public void QuitGame()
-    {
-        Debug.Log("Quit");
-        Application.Quit();
-    }
-    public void StartGame()
-    {
-        Debug.Log("StartGame");
-        SceneManager.LoadScene(1);
-    }
+
     private void Update()
     {
         CheckIfPaused();
@@ -69,7 +65,7 @@ public class SceneLoader : MonoBehaviour
     public void QuitToMenu()
     {
         Debug.Log("Quit button pressed");
-        SceneManager.LoadScene(0); // load MainMenu, pause panel not assigned
+        SceneManager.LoadScene(0); // load MainMenu
     }
 
     // ---------- resets map so player can restart level ----------
@@ -83,6 +79,15 @@ public class SceneLoader : MonoBehaviour
         Debug.Log("Loading next map...");
         movePlayer.ResetPosition();
         loadMap.LoadPremadeMap();
+    }
+
+    public void WinGame()
+    {
+        Debug.Log("Win game");
+        winScreen.SetActive(true);
+        //QuitButton.SetActive(true); // not able to be pressed 
+
+        Time.timeScale = 0;
     }
 }
 // FIXME: after reloading game scene, player can only move once. press continue to reset that bug.

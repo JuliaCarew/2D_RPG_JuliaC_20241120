@@ -9,6 +9,7 @@ public class MovePlayer : MonoBehaviour
     public LoadMap loadMap;
     public Combat combat;
     public Tilemap myTilemap;
+    public SceneLoader sceneLoader;
 
     [Header("Transform & GameObjects")]
     public Transform movePoint;
@@ -125,6 +126,7 @@ public class MovePlayer : MonoBehaviour
         Debug.Log("Level complete! Getting a new map...");
         loadMap.LoadPremadeMap();
         ResetPosition();
+        sceneLoader.WinGame();
     }
     // setting previous position to null, curent position to playertile
     void DrawPlayer(int previousX, int previousY, int currentX, int currentY)

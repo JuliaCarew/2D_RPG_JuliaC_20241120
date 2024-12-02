@@ -13,6 +13,7 @@ public class Combat : MonoBehaviour
     public List<Vector3Int> enemies = new List<Vector3Int>(); // generating list of all enemies in map
     // this list is not counting the enemies generated in the map ? they would have to be placed beforehand
     public bool enemyTurn; // enemies take turns when true, player takes turn when false
+    public float turnDelay = 0.2f;
 
     void Start()
     {
@@ -34,11 +35,11 @@ public class Combat : MonoBehaviour
         for (int check_x = -1; check_x < 2; check_x++)
         {
             for (int check_y = -1; check_y < 2; check_y++)
-            { // so the loop doesnt count the current cell/ itself
+            { 
                 Vector3Int cellPosition = new Vector3Int(x, y, 0);
                 TileBase tileAtPosition = myTilemap.GetTile(cellPosition);
 
-                if (check_y == 0 && check_x == 0)
+                if (check_y == 0 && check_x == 0) // so the loop doesnt count the current cell/ itself
                 {
                     continue;
                 }
@@ -66,13 +67,13 @@ public class Combat : MonoBehaviour
         }
 
         enemyTurn = true;
-        Invoke("EnemyTurn", 0.5f);
+        Invoke("EnemyTurn", turnDelay);
     }
     public void EnemyTurn() 
     {
         Debug.Log("Enemy's turn");
 
-        for (int i = enemies.Count - 1; i >= 0; i--)
+        for (int i = enemies.Count - 1; i >= 0; i--) // don't need to move enemies, just recognize player + attack
         {
             //Vector3Int enemyPos = enemyPositions[i];
             //Vector3Int playerPosition = myTilemap.WorldToCell(movePlayer.movePoint.position);

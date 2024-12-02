@@ -6,9 +6,6 @@ using System.IO;
 
 public class LoadMap : MonoBehaviour
 {
-    [Header("References")]
-    public Combat combat;
-
     [Header("Transform & GameObjects")]
     public Transform mapCenter;
 
@@ -32,6 +29,9 @@ public class LoadMap : MonoBehaviour
     [Header("Map Dimensions")]
     public int mapWidth;
     public int mapHeight;
+
+    public static List<Vector3Int> enemyPositions = new List<Vector3Int>();
+
     void Start()
     {
         //Debug.Log("Loading premade map...");
@@ -88,10 +88,10 @@ public class LoadMap : MonoBehaviour
                     //Debug.Log($"Placing Chest char at: {x} , {-y}");
                     myTilemap.SetTile(position, _chest);
                 }
-               if (myChar == '@'){
+                if (myChar == '@'){
                     //Debug.Log($"Placing Enem-y char at: {x} , {-y}");
                     myTilemap.SetTile(position, _enemy);
-                    //combat.enemies.Add(position); // FIXME: add enemy to the list for combat recognition
+                    enemyPositions.Add(position); // FIXME: add enemy to the list for combat/movement recognition
                 }
                 if (myChar == ' '){
                     //Debug.Log($"Placing None char at: {x} , {-y}");
@@ -105,3 +105,6 @@ public class LoadMap : MonoBehaviour
         }
     }
 }
+// make the chests do something
+// add player health bar
+// fix some maps having blocked win tiles
