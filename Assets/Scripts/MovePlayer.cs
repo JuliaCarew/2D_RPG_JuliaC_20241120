@@ -32,6 +32,7 @@ public class MovePlayer : MonoBehaviour
         }
         MovePosition();
     }
+    // ---------- CHECK MOVE TILE ---------- //
     bool CanMove(int x, int y)
     {
         // setting new variable to determine current position
@@ -68,8 +69,8 @@ public class MovePlayer : MonoBehaviour
         return false;
     }
 
-    // set player to start position whenever completing a level
-    public void ResetPosition()
+    // ---------- RESET PLAYER ---------- // 
+    public void ResetPosition() // set player to start position whenever completing a level
     {
         Vector3 spawnPosition = playerSpawnPoint.transform.position;
         movePoint.position = new Vector3(
@@ -85,6 +86,7 @@ public class MovePlayer : MonoBehaviour
         //Debug.Log($"Spawn position set to {spawnPosition}"); 
     }
 
+    // ---------- MOVE PLAYER ---------- //
     void MovePosition()
     {
         // set player's current pos using movePoint & tileSize
@@ -101,9 +103,8 @@ public class MovePlayer : MonoBehaviour
         // increment target based on player pos
         int targetX = playerX + inputX;
         int targetY = playerY + inputY;
-
-        // Check if the target tile is walkable
-        if (CanMove(targetX, targetY))
+        
+        if (CanMove(targetX, targetY)) // Check if the target tile is walkable
         {   
             // Update the move point's position using targetX,Y var previously selected
             movePoint.position = new Vector3(
@@ -120,18 +121,20 @@ public class MovePlayer : MonoBehaviour
             //Debug.Log($"Cannot move to position: {targetX}, {targetY}");
         }
     }
-    // if player detects _winTile, reset position + get next map
-    void LevelComplete()
+
+    // ---------- RNEXT LV / YOU WIN ---------- //   
+    void LevelComplete() // if player detects _winTile, reset position + get next map
     {
         Debug.Log("Level complete! Getting a new map...");
         loadMap.LoadPremadeMap();
         ResetPosition();
         sceneLoader.WinGame();
     }
+
+    // ---------- DRAW PLAYER ---------- //
     // setting previous position to null, curent position to playertile
     void DrawPlayer(int previousX, int previousY, int currentX, int currentY)
     {
-        //TileBase noneTile = loadMap._none;
         Vector3Int previousPosition = new Vector3Int(previousX, previousY, 0);
         Vector3Int currentPosition = new Vector3Int(currentX, currentY, 0);
 
