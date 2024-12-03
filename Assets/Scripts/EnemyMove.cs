@@ -5,12 +5,16 @@ using UnityEngine.Tilemaps;
 
 public class EnemyMove : MonoBehaviour
 {
+    [Header("Tiles")]
     public TileBase playerTile; 
     public TileBase enemyTile; // updating the enemy sprite
+
+    [Header("References")]
     public Tilemap myTilemap;
     public LoadMap loadMap;
     public MovePlayer movePlayer;
 
+    [Header("Other")]
     public float tileSize = 0.08f;
     public float speed = 5.0f;
     public Transform enemyMovePoint;
@@ -64,36 +68,6 @@ public class EnemyMove : MonoBehaviour
         // need to get enemy positions based on the optput of the list in LoadMap
 
     }
-    //void MoveEnemyPosition()
-    //{
-    //    var player = movePlayer.movePoint;
-    //    TileBase enemyTile = loadMap._enemy;
-
-    //    int enemyX = Mathf.RoundToInt(enemyMovePoint.position.x / tileSize); 
-    //    int enemyY = Mathf.RoundToInt(enemyMovePoint.position.y / tileSize);
-    //    // call movetowardsplayer
-    //    Vector2 targetplayer = (player.transform.position - transform.position).normalized;
-    //    transform.position = Vector2.MoveTowards(transform.position, targetplayer, speed * Time.deltaTime); // need to change tileseze to speed equivalent
-
-    //    int targetplayerX = enemyX;
-    //    int targetplayerY = enemyY;
-
-    //    Debug.Log($"Moving enemy position... {enemyX} {enemyY} compare to {enemyCellPosition} target player {targetplayer}");
-
-    //    if (CanMove(targetplayerX, targetplayerY))
-    //    {
-    //        Debug.Log("Enemy CAN move");
-    //        // Update the move point's position using targetX,Y var previously selected
-    //        enemyMovePoint.position = new Vector3(
-    //            targetplayerX * tileSize,
-    //            targetplayerY * tileSize,
-    //            enemyMovePoint.position.z
-    //        );
-    //        DrawEnemy(enemyX, enemyY, targetplayerX, targetplayerY);  // Draw at the new position
-    //        FindObjectOfType<Combat>().EnemyTurn();
-    //        //Debug.Log($"Player moved to new position: {targetX}, {targetY}");
-    //    }
-    //}
 
     void DrawEnemy(int previousX, int previousY, int currentX, int currentY)
     {

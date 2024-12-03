@@ -30,17 +30,22 @@ public class LoadMap : MonoBehaviour
     public int mapWidth;
     public int mapHeight;
 
+     [Header("Combat System Reference")]
+    public Combat combatSystem;
     public static List<Vector3Int> enemyPositions = new List<Vector3Int>();
 
     void Start()
     {
         //Debug.Log("Loading premade map...");
         LoadPremadeMap();
+        if (combatSystem != null)
+        {
+            combatSystem.enemies = new List<Vector3Int>(enemyPositions); // Pass enemy positions to Combat
+        }
     }
 
     public void LoadPremadeMap()
     {
-        // get path to files
         //Debug.Log("reading text file");
         string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, pick rand file from these
         string[] mapFiles = Directory.GetFiles(folderPath, "*.txt"); // Get all text files
@@ -56,6 +61,7 @@ public class LoadMap : MonoBehaviour
         mapWidth = myLines[0].Length;
 
         myTilemap.ClearAllTiles();
+        enemyPositions.Clear();
         // centering the map
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
@@ -76,30 +82,27 @@ public class LoadMap : MonoBehaviour
                 //Debug.Log($"Reading Char: {myChar} at {x}");
                 Vector3Int position = new Vector3Int(x, -y, 0) + mapOrigin;
                     
-                if (myChar == '#'){
-                    //Debug.Log($"Placing Wall char at: {x} , {-y}");
-                    myTilemap.SetTile(position, _wall); // -y to follow how the lines are read in reverse
-                }
-                if (myChar == 'O'){
-                    //Debug.Log($"Placing Door char at: {x} , {-y}");
-                    myTilemap.SetTile(position, _door);
-                }
-                if (myChar == '*'){
-                    //Debug.Log($"Placing Chest char at: {x} , {-y}");
-                    myTilemap.SetTile(position, _chest);
-                }
-                if (myChar == '@'){
-                    //Debug.Log($"Placing Enem-y char at: {x} , {-y}");
-                    myTilemap.SetTile(position, _enemy);
-                    enemyPositions.Add(position); // FIXME: add enemy to the list for combat/movement recognition
-                }
-                if (myChar == ' '){
-                    //Debug.Log($"Placing None char at: {x} , {-y}");
-                    myTilemap.SetTile(position, null);
-                }
-                if (myChar == '%'){
-                    //Debug.Log($"Placing Win char at: {x} , {-y}");
-                    myTilemap.SetTile(position, _win);
+                switch (myChar)
+                {
+                    case '#':
+                        myTilemap.SetTile(position, _wall);
+                        break;
+                    case 'O':
+                        myTilemap.SetTile(position, _door);
+                        break;
+                    case '*':
+                        myTilemap.SetTile(position, _chest);
+                        break;
+                    case '@':
+                        myTilemap.SetTile(position, _enemy);
+                        enemyPositions.Add(position); // Add to enemy positions
+                        break;
+                    case ' ':
+                        myTilemap.SetTile(position, null);
+                        break;
+                    case '%':
+                        myTilemap.SetTile(position, _win);
+                        break;
                 }
             }
         }
