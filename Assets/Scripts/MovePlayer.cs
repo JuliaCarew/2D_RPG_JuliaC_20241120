@@ -16,7 +16,6 @@ public class MovePlayer : MonoBehaviour
     public GameObject playerSpawnPoint;
 
     public float tileSize = 0.08f;
-    // need to snap player's position to tile, maybe by dividing position by tileSize !!
     public TileBase playerTile; // updating the player sprite
 
     void Start()
@@ -89,8 +88,8 @@ public class MovePlayer : MonoBehaviour
     void MovePosition()
     {
         // set player's current pos using movePoint & tileSize
-        int playerX = Mathf.RoundToInt(movePoint.position.x / tileSize); // need to keep decimal bc its a small number but cast to int
-        int playerY = Mathf.RoundToInt(movePoint.position.y / tileSize); // problems because this is rounding to 1 !! 
+        int playerX = Mathf.RoundToInt(movePoint.position.x / tileSize); 
+        int playerY = Mathf.RoundToInt(movePoint.position.y / tileSize); 
         
         int inputX = 0, inputY = 0;
         if (Input.GetKeyDown(KeyCode.W)) inputY = 1;  // Move up

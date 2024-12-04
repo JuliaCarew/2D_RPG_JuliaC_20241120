@@ -91,7 +91,7 @@ public class HealthSystem : MonoBehaviour
             Debug.LogWarning("enemyhealthText is not assigned in HealthSystem.");
         }
     }
-    // ---------- DMG RED INDICATOR ---------- //
+    // ---------- DMG RED INDICATOR ---------- // FIXME: not working :/
     private void FlashRed()
     {
         if (spriteRenderer == null) return;

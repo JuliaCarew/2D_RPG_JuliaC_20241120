@@ -41,20 +41,19 @@ public class LoadMap : MonoBehaviour
     public void LoadPremadeMap()
     {
         //Debug.Log("reading text file");
-        string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, pick rand file from these
+        string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, 
         string[] mapFiles = Directory.GetFiles(folderPath, "*.txt"); // Get all text files
         // get random text file
         int randomIndex = Random.Range(0, mapFiles.Length);
         string selectedFile = mapFiles[randomIndex];
         //Debug.Log($"Selected map {selectedFile}");
 
-        // read the text
         string[] myLines = File.ReadAllLines(selectedFile); // create string from all idv. lines read
         mapHeight = myLines.Length;
         mapWidth = myLines[0].Length;
 
         myTilemap.ClearAllTiles();
-        // centering the map
+ 
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
             Mathf.RoundToInt(mapCenter.position.x) - mapWidth / 2,
@@ -86,7 +85,6 @@ public class LoadMap : MonoBehaviour
                         myTilemap.SetTile(position, _chest);
                         break;
                     case '@':
-                        //myTilemap.SetTile(position, _enemy);
                         InitializeEnemy(position);
                         break;
                     case ' ':
@@ -111,7 +109,6 @@ public class LoadMap : MonoBehaviour
         EnemyController enemyController = enemy.GetComponent<EnemyController>();
         if (enemyController != null)
         {
-            // Initialize the enemy's properties
             enemyController.Initialize(position);
         }
         else
