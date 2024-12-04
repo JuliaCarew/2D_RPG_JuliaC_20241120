@@ -28,11 +28,11 @@ public class Combat : MonoBehaviour
     }
 
     // ---------- PLAYER TURN ---------- //
-    public void PlayerTookTurn(Vector3Int playerPosition)
+    public void PlayerTookTurn()
     {
         //Debug.Log("Player's turn");
 
-        if (CheckAdjacentTiles(playerPosition, enemy.enemyPosition))
+        if (HasTargetNeighbor())
         {
             Debug.Log("Player attacks enemy!");
             PlayerAttacksEnemy(playerHealthSystem.playerDamage);
@@ -55,7 +55,7 @@ public class Combat : MonoBehaviour
 
         Vector3Int playerPosition = Vector3Int.RoundToInt(movePlayer.movePoint.position);
 
-        if (CheckAdjacentTiles(enemy.enemyPosition, playerPosition))
+        if (HasTargetNeighbor())
         {
             Debug.Log("Enemy attacks player!");
             EnemyAttacksPlayer(enemy.enemyDamage);
@@ -64,7 +64,7 @@ public class Combat : MonoBehaviour
     }
 
     // ---------- CHECK NEIGHBOR ---------- //
-    private bool CheckAdjacentTiles(Vector3Int currentPosition, Vector3Int targetPosition)
+    private bool HasTargetNeighbor() // right now is checking grid which had bigger tiles, take from player movement?
     {
         for (int x = -1; x <= 1; x++)
         {
@@ -74,10 +74,14 @@ public class Combat : MonoBehaviour
                 if (x == 0 && y == 0)
                 continue;
 
-                Vector3Int checkPosition = currentPosition + new Vector3Int(x, y, 0);
+                Vector3Int cellPosition = new Vector3Int(x, y, 0);
+                // Get the tile at the specified grid position
+                var tileAtPosition = myTilemap.WorldToCell(cellPosition);
+
+                Vector3Int checkPosition = tileAtPosition + new Vector3Int(x, y, 0);
 
                 // Compare the target position to the adjacent positions
-                if (checkPosition == targetPosition)
+                if (checkPosition == tileAtPosition)
                 {
                     Debug.Log($"Target found at {checkPosition}");
                     return true;

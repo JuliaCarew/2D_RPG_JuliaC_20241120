@@ -34,7 +34,7 @@ public class LoadMap : MonoBehaviour
     void Start()
     {
         //Debug.Log("Loading premade map...");
-        LoadPremadeMap();      
+        LoadPremadeMap();  
     }
 
     // ---------- LOAD RANDOM MAP ---------- //
@@ -53,7 +53,7 @@ public class LoadMap : MonoBehaviour
         mapWidth = myLines[0].Length;
 
         myTilemap.ClearAllTiles();
- 
+
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
             Mathf.RoundToInt(mapCenter.position.x) - mapWidth / 2,

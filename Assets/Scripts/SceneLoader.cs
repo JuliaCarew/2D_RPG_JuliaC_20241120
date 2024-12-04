@@ -9,6 +9,7 @@ public class SceneLoader : MonoBehaviour
     [Header("References")]
     public MovePlayer movePlayer;
     public LoadMap loadMap;
+    public HealthSystem playerHealthSystem;
 
     [Header("Pause Menu")]
     public GameObject pausePanel;
@@ -69,7 +70,7 @@ public class SceneLoader : MonoBehaviour
     }
 
     // ---------- resets map so player can restart level ----------
-    public void Restart()
+    public void Restart() // !!! right now player takes dmg when resetting position
     {
         Debug.Log("Restart button pressed");
         movePlayer.ResetPosition(); // need to also erase previous position
@@ -78,6 +79,7 @@ public class SceneLoader : MonoBehaviour
     {
         Debug.Log("Loading next map...");
         movePlayer.ResetPosition();
+        playerHealthSystem.ResetHealth();
         loadMap.LoadPremadeMap();
     }
 

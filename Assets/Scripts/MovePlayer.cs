@@ -58,7 +58,7 @@ public class MovePlayer : MonoBehaviour
         }
         if (tileAtPosition == loadMap._enemy)
         {
-            combat.PlayerTookTurn(cellPosition); 
+            combat.PlayerTookTurn(); 
         }
         if (tileAtPosition == loadMap._win)
         {
@@ -77,10 +77,11 @@ public class MovePlayer : MonoBehaviour
             Mathf.Round(spawnPosition.y / tileSize) * tileSize,
             movePoint.position.z
         );
+
         DrawPlayer(0, 0, 
             Mathf.RoundToInt(spawnPosition.x / tileSize), 
             Mathf.RoundToInt(spawnPosition.y / tileSize)
-        );   
+        );
         //Debug.Log($"Spawn position set to {spawnPosition}"); 
     }
 
@@ -110,7 +111,7 @@ public class MovePlayer : MonoBehaviour
                 movePoint.position.z
             );     
             DrawPlayer(playerX, playerY, targetX, targetY);  // Draw the player at the new position
-            FindObjectOfType<Combat>().PlayerTookTurn(new Vector3Int(targetX, targetY, 0));
+            combat.enemyTurn = true;
             //Debug.Log($"Player moved to new position: {targetX}, {targetY}");
         }
         else

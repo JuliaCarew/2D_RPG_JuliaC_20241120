@@ -109,4 +109,11 @@ public class HealthSystem : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         spriteRenderer.color = originalColor;
     }
+
+    public void ResetHealth()
+    {
+        currentHealth = maxHealth;
+        enemyController.currentHealth = enemyController.maxHealth;
+        UpdateHealthUI();
+    }
 }
