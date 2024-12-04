@@ -7,61 +7,69 @@ using TMPro;
 public class HealthSystem : MonoBehaviour
 {
     [Header("References")]
-    // public MovePlayer movePlayer;
-    // public LoadMap loadMap;
     public Tilemap myTilemap;
     public Vector3Int tilePosition;
-    public SpriteRenderer spriteRenderer;
+    public EnemyController enemyController;
 
     [Header("Health Settings")]
     public int maxHealth = 50;
+    public SpriteRenderer spriteRenderer;
     public int currentHealth;
-    public int enemyDamage = 5; 
     public int playerDamage = 10;
+    private Color originalColor;
 
     [Header("UI Reference")]
     public TextMeshProUGUI healthText;
-    //public Transform damageTextSpawnPoint;
+    public TextMeshProUGUI enemyhealthText;
 
     private Coroutine flashCoroutine;
 
-    void Start()
+    void Awake()
     {
         currentHealth = maxHealth;
-        Debug.Log($"Initial health set to {currentHealth}.");
+        enemyController.currentHealth = enemyController.maxHealth; 
+    }
+    void Start()
+    {
+        //Debug.Log($"Initial health set to {currentHealth}.");
         UpdateHealthUI();
+
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
     }     
-    
+    // ---------- DAMAGE ---------- //
     public void TakeDamage(int damage)
     {
+        Debug.Log($"Taking damage: {damage}. Health before damage: {currentHealth}");
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
+        Debug.Log($"Health after damage: {currentHealth}");
         UpdateHealthUI();
-        //ShowDamageText(damage);
-        FlashRed();
-
-        Debug.Log($"Entity takes {damage} damage. Current health: {currentHealth}");
 
         if (currentHealth <= 0)
         {
-            Die();
+            currentHealth = 0;
+            Die(tilePosition);
+        }
+        else
+        {
+            FlashRed();
         }
     }
-
-    private void Die()
+    // ---------- DIE ---------- //
+    public void Die(Vector3Int position)
     {
-        Debug.Log("something died :(");
+        Debug.Log(gameObject.name + " has died!");
 
         if (myTilemap != null)
         {
-            myTilemap.SetTile(tilePosition, null);
-            Debug.Log($"Tile at {tilePosition} set to null.");
-        }
-        else{
-            Debug.LogWarning("Tilemap reference not assigned");
+            myTilemap.SetTile(position, null);
+            Debug.Log($"Tile at {position} set to null.");
         }
     }
-
-    private void UpdateHealthUI()
+    // ---------- UI ---------- //
+    public void UpdateHealthUI()
     {
         if (healthText != null)
         {
@@ -70,24 +78,20 @@ public class HealthSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("HealthText UI reference is not assigned!");
+            Debug.LogWarning("healthText is not assigned in HealthSystem.");
+        }
+
+        if (enemyhealthText != null && enemyController != null)
+        {
+            enemyhealthText.text = $"Enemy HP: {enemyController.currentHealth}";
+            Debug.Log($"Updated enemy health UI: {enemyhealthText.text}");
+        }
+        else if (enemyhealthText == null)
+        {
+            Debug.LogWarning("enemyhealthText is not assigned in HealthSystem.");
         }
     }
-
-    // private void ShowDamageText(int damage)
-    // {
-    //     if (damageTextPrefab != null && damageTextSpawnPoint != null)
-    //     {
-    //         GameObject damageText = Instantiate(damageTextPrefab, damageTextSpawnPoint.position, Quaternion.identity);
-    //         TextMeshProUGUI textComponent = damageText.GetComponent<TextMeshProUGUI>();
-    //         if (textComponent != null)
-    //         {
-    //             textComponent.text = $"-{damage}";
-    //         }
-    //         Destroy(damageText, 1.0f); // Destroy after 1 second
-    //     }
-    // }
-
+    // ---------- DMG RED INDICATOR ---------- //
     private void FlashRed()
     {
         if (spriteRenderer == null) return;
@@ -99,15 +103,10 @@ public class HealthSystem : MonoBehaviour
 
         flashCoroutine = StartCoroutine(FlashRedCoroutine());
     }
-
     private IEnumerator FlashRedCoroutine()
     {
         spriteRenderer.color = Color.red;
         yield return new WaitForSeconds(0.2f);
-        spriteRenderer.color = Color.white;
+        spriteRenderer.color = originalColor;
     }
 }
-// make a helper mathod that clamps the maximum health at 50, and the minimum health at 0
-// return value to clamp, minimum, maximum
-
-// separate healthsystem logic into here, leave the rest do be the turns

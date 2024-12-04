@@ -8,99 +8,102 @@ public class Combat : MonoBehaviour
 {
     [Header("References")]
     public MovePlayer movePlayer;
-    //public LoadMap loadMap;
+    public LoadMap loadMap;
     public Tilemap myTilemap;
-    public HealthSystem healthSystem;
+    public HealthSystem playerHealthSystem;
+    public HealthSystem enemyHealthSystem;
+    public EnemyController enemy;
 
-    public List<Vector3Int> enemies = new List<Vector3Int>(); // generating list of all enemies in map
+    [Header("Game Objects")]
+    public GameObject gameOverUI;
+
+    [Header("Turn Handler")]
     public bool enemyTurn; // enemies take turns when true, player takes turn when false
     public float turnDelay = 0.2f;
-    public GameObject damageTextPrefab;
-
 
     void Start()
     {
         enemyTurn = false;
+        gameOverUI.SetActive(false);
     }
 
-    void Update()
-    {
-        if (!enemyTurn)
-        {
-            return;
-        }
-    }
-
-    public void EnemyTurn() 
-    {
-        Debug.Log("Enemy's turn");
-
-        foreach (var enemyPos in enemies)
-        {
-            if (Vector3Int.Distance(healthSystem.myTilemap.WorldToCell(healthSystem.transform.position), enemyPos) == 1) // If adjacent
-            {
-                Debug.Log($"Enemy at {enemyPos} attacks player!");
-                healthSystem.TakeDamage(healthSystem.enemyDamage); // Enemy damages player
-                ShowDamageText(healthSystem.enemyDamage, healthSystem.myTilemap.WorldToCell(healthSystem.transform.position)); // Show damage text for player
-                break; // Only one attack per turn
-            }
-        }
-        enemyTurn = false;
-    }
-
-    void CheckForPlayerNearEnemy(Vector3Int enemyPosition)
-    {
-        Vector3Int[] neighboringTiles = 
-        {
-            Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down,
-            new Vector3Int(-1, 1, 0), new Vector3Int(1, 1, 0),
-            new Vector3Int(-1, -1, 0), new Vector3Int(1, -1, 0)
-        };
-
-         foreach (var offset in neighboringTiles)
-        {
-            Vector3Int neighborPosition = enemyPosition + offset;
-            TileBase tileAtPosition = myTilemap.GetTile(neighborPosition);
-
-            if (tileAtPosition == movePlayer.playerTile) // FIXME: Player is within range
-            {
-                Debug.Log($"Enemy at {enemyPosition} attacks player at {neighborPosition}!");
-                healthSystem.TakeDamage(healthSystem.enemyDamage);
-                break;
-            }
-        }
-    }
-
+    // ---------- PLAYER TURN ---------- //
     public void PlayerTookTurn(Vector3Int playerPosition)
     {
-        Debug.Log("Player's turn");
+        //Debug.Log("Player's turn");
 
-        List<Vector3Int> enemiesToRemove = new List<Vector3Int>(); // Temporary list to store enemies to remove
-
-        foreach (var enemyPos in enemies)
+        if (CheckAdjacentTiles(playerPosition, enemy.enemyPosition))
         {
-            if (Vector3Int.Distance(playerPosition, enemyPos) == 1) 
+            Debug.Log("Player attacks enemy!");
+            PlayerAttacksEnemy(playerHealthSystem.playerDamage);
+
+            if (enemy.healthSystem.currentHealth <= 0)
             {
-                Debug.Log("Player attacks enemy!");
-                enemiesToRemove.Add(enemyPos); // Mark enemy for removal
-                ShowDamageText(healthSystem.playerDamage, enemyPos); // Show damage text
+                Debug.Log("Enemy defeated!");
+                myTilemap.SetTile(enemy.enemyPosition, null);
+                Destroy(enemy.gameObject);
             }
-        }
-        foreach (var enemyPos in enemiesToRemove) // Remove enemies after the iteration
-        {
-            enemies.Remove(enemyPos);
         }
         enemyTurn = true;
         Invoke("EnemyTurn", turnDelay);
     }
 
-    private void ShowDamageText(int damage, Vector3Int position)
+    // ---------- ENEMY TURN ---------- //
+    public void EnemyTurn() 
     {
-        // Create a new damage text object at the position
-        GameObject damageTextObject = Instantiate(damageTextPrefab, myTilemap.CellToWorld(position), Quaternion.identity);
-        TextMeshProUGUI damageText = damageTextObject.GetComponent<TextMeshProUGUI>();
-        damageText.text = $"-{damage}";
-        
-        Destroy(damageTextObject, 1.5f);
+        //Debug.Log("Enemy's turn");
+
+        Vector3Int playerPosition = Vector3Int.RoundToInt(movePlayer.movePoint.position);
+
+        if (CheckAdjacentTiles(enemy.enemyPosition, playerPosition))
+        {
+            Debug.Log("Enemy attacks player!");
+            EnemyAttacksPlayer(enemy.enemyDamage);
+        }
+        enemyTurn = false;
+    }
+
+    // ---------- CHECK NEIGHBOR ---------- //
+    private bool CheckAdjacentTiles(Vector3Int currentPosition, Vector3Int targetPosition)
+    {
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                // Skip the center tile
+                if (x == 0 && y == 0)
+                continue;
+
+                Vector3Int checkPosition = currentPosition + new Vector3Int(x, y, 0);
+
+                // Compare the target position to the adjacent positions
+                if (checkPosition == targetPosition)
+                {
+                    Debug.Log($"Target found at {checkPosition}");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // ---------- ATTACK HANDLERS ---------- //
+    public void EnemyAttacksPlayer(int enemyDamage)
+    {
+        playerHealthSystem.TakeDamage(enemyDamage);
+        Debug.Log("Player takes " + enemyDamage + " damage.");
+        if (playerHealthSystem.currentHealth <= 0)
+        {
+            Debug.Log("Player has died! Game Over.");
+            gameOverUI.SetActive(true); // Show GameOver UI
+        }
+    }
+    public void PlayerAttacksEnemy(int playerDamage)
+    {
+        enemyHealthSystem.TakeDamage(playerDamage);
+        Debug.Log("Enemy takes " + playerDamage + " damage.");
     }
 }
+// player is starting to take their own damage (10 dmg)
+// reset after starting game not working
+// enemy damage needs to only trigger when around enemy, not far away & not on null tile

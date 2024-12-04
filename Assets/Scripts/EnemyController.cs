@@ -1,16 +1,45 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.Tilemaps;
 
-public class EnemyMove : MonoBehaviour
+public class EnemyController : MonoBehaviour
 {
+    [Header("References")]
     public Tilemap myTilemap;
     public LoadMap loadMap;
     public MovePlayer movePlayer;
-    public Vector3Int enemyPosition; 
+    public HealthSystem healthSystem; 
 
+    [Header("Enemy Stats")]
+    public Vector3Int enemyPosition;
+    public int maxHealth = 30;
+    public int currentHealth;
+    public int enemyDamage = 5; 
+    public TileBase enemyTile;
+
+    void Start()
+    {
+        if (healthSystem == null)
+        {
+            healthSystem = GetComponent<HealthSystem>(); 
+            if (healthSystem == null)
+            {
+                Debug.LogError($"HealthSystem is missing on {gameObject.name}. Please attach one.");
+                return;
+            }
+        }
+    }
+
+    public void Initialize(Vector3Int position)
+    {
+        enemyPosition = position;
+        transform.position = myTilemap.GetCellCenterWorld(position); // Set position using world coordinates
+        Debug.Log($"Enemy initialized at {enemyPosition}");
+    }
+    
+    // ---------- ENEMY AI MOVEMENT ---------- //
     public void MoveTowardsPlayer()
     {
         // Get player's position as a tilemap coordinate
@@ -33,10 +62,28 @@ public class EnemyMove : MonoBehaviour
             myTilemap.SetTile(enemyPosition, loadMap._enemy); // Set the tile for the enemy's new position
         }
     }
-
     bool CanMove(Vector3Int position)
     {
         TileBase tile = myTilemap.GetTile(position);
         return tile == null || tile == loadMap._none; // Walkable if null or designated walkable tile
     }
+
+    // ---------- HEALTH SYSTEM ---------- //
+    public void TakeDamage(int damage)
+    {
+        if (healthSystem != null)
+        {
+            healthSystem.TakeDamage(damage);
+            healthSystem.UpdateHealthUI();
+        }
+    }
+    public void Die()
+    {
+        if (healthSystem != null)
+        {
+            healthSystem.Die(enemyPosition);
+        }
+        Destroy(gameObject);
+    }
+
 }

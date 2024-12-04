@@ -33,7 +33,7 @@ public class MovePlayer : MonoBehaviour
         MovePosition();
     }
     // ---------- CHECK MOVE TILE ---------- //
-    bool CanMove(int x, int y)
+    public bool CanMove(int x, int y)
     {
         // setting new variable to determine current position
         Vector3Int cellPosition = new Vector3Int(x, y, 0);      
@@ -59,7 +59,7 @@ public class MovePlayer : MonoBehaviour
         }
         if (tileAtPosition == loadMap._enemy)
         {
-            //combat.PlayerTookTurn(); 
+            combat.PlayerTookTurn(cellPosition); 
         }
         if (tileAtPosition == loadMap._win)
         {
@@ -82,7 +82,6 @@ public class MovePlayer : MonoBehaviour
             Mathf.RoundToInt(spawnPosition.x / tileSize), 
             Mathf.RoundToInt(spawnPosition.y / tileSize)
         );   
-        //combat.PlayerTookTurn();
         //Debug.Log($"Spawn position set to {spawnPosition}"); 
     }
 
@@ -93,7 +92,6 @@ public class MovePlayer : MonoBehaviour
         int playerX = Mathf.RoundToInt(movePoint.position.x / tileSize); // need to keep decimal bc its a small number but cast to int
         int playerY = Mathf.RoundToInt(movePoint.position.y / tileSize); // problems because this is rounding to 1 !! 
         
-        // moving on X, Y
         int inputX = 0, inputY = 0;
         if (Input.GetKeyDown(KeyCode.W)) inputY = 1;  // Move up
         else if (Input.GetKeyDown(KeyCode.S)) inputY = -1; // Move down
@@ -142,7 +140,6 @@ public class MovePlayer : MonoBehaviour
         {
             myTilemap.SetTile(previousPosition, null);
         }
-
         // Place the player tile at the new position
         myTilemap.SetTile(currentPosition, playerTile);
     }

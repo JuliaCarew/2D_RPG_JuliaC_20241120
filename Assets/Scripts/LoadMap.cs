@@ -8,6 +8,7 @@ public class LoadMap : MonoBehaviour
 {
     [Header("Transform & GameObjects")]
     public Transform mapCenter;
+    public GameObject enemyPrefab;
 
     [Header("Tilemap & Tiles")]
     public Tilemap myTilemap;
@@ -30,30 +31,22 @@ public class LoadMap : MonoBehaviour
     public int mapWidth;
     public int mapHeight;
 
-     [Header("Combat System Reference")]
-    public Combat combatSystem;
-    public static List<Vector3Int> enemyPositions = new List<Vector3Int>();
-
     void Start()
     {
         //Debug.Log("Loading premade map...");
-        LoadPremadeMap();
-        if (combatSystem != null)
-        {
-            combatSystem.enemies = new List<Vector3Int>(enemyPositions); // Pass enemy positions to Combat
-        }
+        LoadPremadeMap();      
     }
 
+    // ---------- LOAD RANDOM MAP ---------- //
     public void LoadPremadeMap()
     {
         //Debug.Log("reading text file");
         string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, pick rand file from these
         string[] mapFiles = Directory.GetFiles(folderPath, "*.txt"); // Get all text files
-
         // get random text file
         int randomIndex = Random.Range(0, mapFiles.Length);
         string selectedFile = mapFiles[randomIndex];
-        Debug.Log($"Selected map {selectedFile}");
+        //Debug.Log($"Selected map {selectedFile}");
 
         // read the text
         string[] myLines = File.ReadAllLines(selectedFile); // create string from all idv. lines read
@@ -61,7 +54,6 @@ public class LoadMap : MonoBehaviour
         mapWidth = myLines[0].Length;
 
         myTilemap.ClearAllTiles();
-        enemyPositions.Clear();
         // centering the map
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
@@ -94,8 +86,8 @@ public class LoadMap : MonoBehaviour
                         myTilemap.SetTile(position, _chest);
                         break;
                     case '@':
-                        myTilemap.SetTile(position, _enemy);
-                        enemyPositions.Add(position); // Add to enemy positions
+                        //myTilemap.SetTile(position, _enemy);
+                        InitializeEnemy(position);
                         break;
                     case ' ':
                         myTilemap.SetTile(position, null);
@@ -107,7 +99,26 @@ public class LoadMap : MonoBehaviour
             }
         }
     }
+
+    // ---------- SET ENEMY GAME OBJECT ---------- //
+    void InitializeEnemy(Vector3Int position)
+    {
+        Vector3 worldPosition = myTilemap.GetCellCenterWorld(position);
+        // Instantiate the enemy prefab at the corresponding world position
+        GameObject enemy = Instantiate(enemyPrefab, worldPosition, Quaternion.identity);
+
+        // Ensure the prefab has the necessary scripts and initialize them
+        EnemyController enemyController = enemy.GetComponent<EnemyController>();
+        if (enemyController != null)
+        {
+            // Initialize the enemy's properties
+            enemyController.Initialize(position);
+        }
+        else
+        {
+            Debug.LogError("Enemy prefab does not have an EnemyController script!");
+        }
+        myTilemap.SetTile(position, null);
+        Debug.Log($"Enemy placed at {position}");
+    }
 }
-// make the chests do something
-// add player health bar
-// fix some maps having blocked win tiles
