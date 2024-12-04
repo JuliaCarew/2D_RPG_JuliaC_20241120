@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Combat : MonoBehaviour
+public class Combat : MonoBehaviour // FIXME: player stops taking input after y: 6
 {
     [Header("References")]
     public MovePlayer movePlayer;
@@ -23,19 +23,31 @@ public class Combat : MonoBehaviour
 
     void Start()
     {
+        if (enemyTurn == false)
+        {
+            PlayerTookTurn();
+        }
+        if (enemyTurn == true)
+        {
+            EnemyTurn();
+        }
+
         enemyTurn = false;
         gameOverUI.SetActive(false);
     }
-
-    // ---------- PLAYER TURN ---------- //
+   
+    // ---------- PLAYER TURN ---------- // 
     public void PlayerTookTurn()
     {
-        //Debug.Log("Player's turn");
+        //enemyTurn = false;
+
+        Debug.Log("Player's turn");
 
         if (HasTargetNeighbor())
         {
             Debug.Log("Player attacks enemy!");
             PlayerAttacksEnemy(playerHealthSystem.playerDamage);
+            enemyTurn = true;
 
             if (enemy.healthSystem.currentHealth <= 0)
             {
@@ -44,14 +56,15 @@ public class Combat : MonoBehaviour
                 Destroy(enemy.gameObject);
             }
         }
-        enemyTurn = true;
-        Invoke("EnemyTurn", turnDelay);
+        EnemyTurn();
     }
 
     // ---------- ENEMY TURN ---------- //
     public void EnemyTurn() 
     {
-        //Debug.Log("Enemy's turn");
+        //enemyTurn = true;
+
+        Debug.Log("Enemy's turn");
 
         Vector3Int playerPosition = Vector3Int.RoundToInt(movePlayer.movePoint.position);
 
@@ -59,8 +72,8 @@ public class Combat : MonoBehaviour
         {
             Debug.Log("Enemy attacks player!");
             EnemyAttacksPlayer(enemy.enemyDamage);
+            enemyTurn = false;
         }
-        enemyTurn = false;
     }
 
     // ---------- CHECK NEIGHBOR ---------- //
@@ -81,7 +94,7 @@ public class Combat : MonoBehaviour
                 Vector3Int checkPosition = tileAtPosition + new Vector3Int(x, y, 0);
 
                 // Compare the target position to the adjacent positions
-                if (checkPosition == tileAtPosition)
+                if (checkPosition == enemy.enemyPosition || checkPosition == movePlayer.movePoint.position)
                 {
                     Debug.Log($"Target found at {checkPosition}");
                     return true;
@@ -108,6 +121,3 @@ public class Combat : MonoBehaviour
         Debug.Log("Enemy takes " + playerDamage + " damage.");
     }
 }
-// player is starting to take their own damage (10 dmg)
-// reset after starting game not working
-// enemy damage needs to only trigger when around enemy, not far away & not on null tile

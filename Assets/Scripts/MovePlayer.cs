@@ -14,9 +14,11 @@ public class MovePlayer : MonoBehaviour
     [Header("Transform & GameObjects")]
     public Transform movePoint;
     public GameObject playerSpawnPoint;
+    public TileBase borderTile;
 
     public float tileSize = 0.08f;
     public TileBase playerTile; // updating the player sprite
+    public TileBase enemyTile;
 
     void Start()
     {
@@ -25,7 +27,7 @@ public class MovePlayer : MonoBehaviour
     }
     void Update()
     {
-        if (combat.enemyTurn)
+        if (combat.enemyTurn == true)
         {
             return;
         }
@@ -39,26 +41,29 @@ public class MovePlayer : MonoBehaviour
         // Get the tile at the specified grid position
         TileBase tileAtPosition = myTilemap.GetTile(cellPosition);
 
-        //Debug.Log($"Checking tile at ({x}, {y}): {tileAtPosition}");
+        Debug.Log($"Player is checking tile at ({x}, {y}): {tileAtPosition}");
 
         // Allow movement if the tile is null (empty) or is explicitly _none
         if (tileAtPosition == null || tileAtPosition == loadMap._none)
         {
-            //Debug.Log("CanWalk");
+            Debug.Log("Player can walk");
             return true; 
         }
 
         // cannot move on wall, chest, door, or enemy tiles
         if (tileAtPosition == loadMap._wall ||
             tileAtPosition == loadMap._door ||
-            tileAtPosition == loadMap._chest)
+            tileAtPosition == loadMap._chest ||
+            tileAtPosition == borderTile)
         {
-            //Debug.Log($"Blocked tile at ({x}, {y}): {tileAtPosition}");
+            Debug.Log($"Player is blocked at ({x}, {y}): {tileAtPosition}");
             return false;
         }
         if (tileAtPosition == loadMap._enemy)
         {
-            combat.PlayerTookTurn(); 
+            //combat.enemyTurn = true; //FIXME: BROKENNNNNN needs to trigger enemy's turn
+            Debug.Log($"Player is blocked by ENEMY at ({x}, {y}): {tileAtPosition}");
+            return false;
         }
         if (tileAtPosition == loadMap._win)
         {
@@ -77,12 +82,12 @@ public class MovePlayer : MonoBehaviour
             Mathf.Round(spawnPosition.y / tileSize) * tileSize,
             movePoint.position.z
         );
-
+       
         DrawPlayer(0, 0, 
             Mathf.RoundToInt(spawnPosition.x / tileSize), 
             Mathf.RoundToInt(spawnPosition.y / tileSize)
         );
-        //Debug.Log($"Spawn position set to {spawnPosition}"); 
+        Debug.Log($"Player spawn position set to {spawnPosition}");
     }
 
     // ---------- MOVE PLAYER ---------- //
@@ -102,6 +107,11 @@ public class MovePlayer : MonoBehaviour
         int targetX = playerX + inputX;
         int targetY = playerY + inputY;
         
+        if (inputX == 0 && inputY == 0)
+        {
+            return;
+        }
+
         if (CanMove(targetX, targetY)) // Check if the target tile is walkable
         {   
             // Update the move point's position using targetX,Y var previously selected
@@ -111,12 +121,11 @@ public class MovePlayer : MonoBehaviour
                 movePoint.position.z
             );     
             DrawPlayer(playerX, playerY, targetX, targetY);  // Draw the player at the new position
-            combat.enemyTurn = true;
-            //Debug.Log($"Player moved to new position: {targetX}, {targetY}");
+            Debug.Log($"Player moved to new position: {targetX}, {targetY}");
         }
         else
         {
-            //Debug.Log($"Cannot move to position: {targetX}, {targetY}");
+            Debug.Log($"Player cannot move to position: {targetX}, {targetY}");
         }
     }
 

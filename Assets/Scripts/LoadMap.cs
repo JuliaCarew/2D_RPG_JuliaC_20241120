@@ -34,6 +34,10 @@ public class LoadMap : MonoBehaviour
     void Start()
     {
         //Debug.Log("Loading premade map...");
+        if (enemyPrefab != null)
+        {
+            Destroy(enemyPrefab);
+        }
         LoadPremadeMap();  
     }
 
@@ -57,7 +61,7 @@ public class LoadMap : MonoBehaviour
         // converts the mapCenter position to integer tilemap coordinates
         Vector3Int mapOrigin = new Vector3Int(
             Mathf.RoundToInt(mapCenter.position.x) - mapWidth / 2,
-            Mathf.RoundToInt((mapCenter.position.y) - mapHeight / 2) + 7, // + y 0.5
+            Mathf.RoundToInt((mapCenter.position.y) - mapHeight / 2) + 6, // + y 0.5
             0
         );
 
@@ -85,7 +89,11 @@ public class LoadMap : MonoBehaviour
                         myTilemap.SetTile(position, _chest);
                         break;
                     case '@':
-                        InitializeEnemy(position);
+                        myTilemap.SetTile(position, _enemy);
+                        //if (enemyPrefab != null)
+                        //{
+                        //    InitializeEnemy(position);
+                        //}
                         break;
                     case ' ':
                         myTilemap.SetTile(position, null);
@@ -98,10 +106,10 @@ public class LoadMap : MonoBehaviour
         }
     }
 
-    // ---------- SET ENEMY GAME OBJECT ---------- //
-    void InitializeEnemy(Vector3Int position)
+    // ---------- SET ENEMY GAME OBJECT ---------- // enemy needs to be spawned at the map's location REFRESH position every time
+    void InitializeEnemy(Vector3Int position) // enemy tile can be assigned a script w/o needing a gameobject?
     {
-        Vector3 worldPosition = myTilemap.GetCellCenterWorld(position);
+        Vector3 worldPosition = myTilemap.GetCellCenterWorld(position); // FIXME:
         // Instantiate the enemy prefab at the corresponding world position
         GameObject enemy = Instantiate(enemyPrefab, worldPosition, Quaternion.identity);
 

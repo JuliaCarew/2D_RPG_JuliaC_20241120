@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
-public class EnemyController : MonoBehaviour
+public class EnemyController : MonoBehaviour // need to reference the _enemy tile
 {
     [Header("References")]
     public Tilemap myTilemap;
@@ -16,14 +16,17 @@ public class EnemyController : MonoBehaviour
     public Combat combat;
 
     [Header("Enemy Stats")]
-    public Vector3Int enemyPosition;
     public int maxHealth = 30;
     public int currentHealth;
     public int enemyDamage = 5; 
-    public TileBase enemyTile;
     public float tileSize = 0.08f;
-    public Transform enemyMovePoint;
     private int direction;
+
+    [Header("Enemy Position / Tiles")]
+    public Vector3Int enemyPosition;
+    public Transform enemyMovePoint;
+    public TileBase enemyTile;
+    public TileBase playerTile;
 
     void Start()
     {
@@ -47,10 +50,6 @@ public class EnemyController : MonoBehaviour
     }
     public void Initialize(Vector3Int position)
     {
-        //enemyPosition = position;
-        //transform.position = myTilemap.GetCellCenterWorld(position); // Set position using world coordinates
-        //Debug.Log($"Enemy initialized at {enemyPosition}");
-
         Vector3 enemyPosition = enemyMovePoint.transform.position;
         enemyMovePoint.position = new Vector3(
             Mathf.Round(enemyPosition.x / tileSize) * tileSize,
@@ -59,19 +58,19 @@ public class EnemyController : MonoBehaviour
         );
     }
 
-    public bool CanMove(int x, int y)
+    public bool CanMove(int x, int y) // enemy is spawned outside map as a clone, and when running into wall, goes to shit
     {
         // setting new variable to determine current position
         Vector3Int cellPosition = new Vector3Int(x, y, 0);
         // Get the tile at the specified grid position
         TileBase tileAtPosition = myTilemap.GetTile(cellPosition);
 
-        //Debug.Log($"Checking tile at ({x}, {y}): {tileAtPosition}");
+        Debug.Log($"Enemy is checking tile at ({x}, {y}): {tileAtPosition}");
 
         // Allow movement if the tile is null (empty) or is explicitly _none
         if (tileAtPosition == null || tileAtPosition == loadMap._none)
         {
-            //Debug.Log("CanWalk");
+            Debug.Log("Enemy can walk");
             return true;
         }
 
@@ -80,18 +79,23 @@ public class EnemyController : MonoBehaviour
             tileAtPosition == loadMap._door ||
             tileAtPosition == loadMap._chest)
         {
-            //Debug.Log($"Blocked tile at ({x}, {y}): {tileAtPosition}");
+            Debug.Log($"Enemy is blocked at ({x}, {y}): {tileAtPosition}");
             return false;
         }
-        if (tileAtPosition == movePlayer.playerTile)
+        if (tileAtPosition == playerTile)
         {
-            combat.EnemyAttacksPlayer(enemyDamage);
+            combat.enemyTurn = true;
+            return false;
+        }
+        if (tileAtPosition == enemyTile) // enemy is checking its clones ??
+        {
+            return false;
         }
         return false;
     }
 
     // ---------- ENEMY AI MOVEMENT ---------- //
-    public void MoveTowardsPlayer()
+    public void MoveTowardsPlayer() // need to find the player through it's TILE and chase them from that position
     {
         int enemyX = Mathf.RoundToInt(enemyMovePoint.position.x / tileSize);
         int enemyY = Mathf.RoundToInt(enemyMovePoint.position.y / tileSize);
@@ -114,7 +118,11 @@ public class EnemyController : MonoBehaviour
             );
             DrawEnemy(enemyX, enemyY, targetX, targetY);
             combat.enemyTurn = false;
-            //Debug.Log($"Player moved to new position: {targetX}, {targetY}");
+            Debug.Log($"Enemy moved to new position: {targetX}, {targetY}");
+        }
+        if (!CanMove(targetX, targetY))
+        {
+            return;
         }
     }
     void DrawEnemy(int previousX, int previousY, int currentX, int currentY)

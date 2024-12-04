@@ -75,7 +75,7 @@ public class SceneLoader : MonoBehaviour
         Debug.Log("Restart button pressed");
         movePlayer.ResetPosition(); // need to also erase previous position
     }
-    public void NextNevel()
+    public void NextNevel() // need to destroy all enemy game objects
     {
         Debug.Log("Loading next map...");
         movePlayer.ResetPosition();
