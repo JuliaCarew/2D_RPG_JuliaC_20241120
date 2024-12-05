@@ -70,12 +70,12 @@ public class SceneLoader : MonoBehaviour
     }
 
     // ---------- resets map so player can restart level ----------
-    public void Restart() // !!! right now player takes dmg when resetting position
+    public void Restart() 
     {
         Debug.Log("Restart button pressed");
-        movePlayer.ResetPosition(); // need to also erase previous position
+        movePlayer.ResetPosition(); 
     }
-    public void NextNevel() // need to destroy all enemy game objects
+    public void NextNevel() 
     {
         Debug.Log("Loading next map...");
         movePlayer.ResetPosition();
@@ -87,9 +87,6 @@ public class SceneLoader : MonoBehaviour
     {
         Debug.Log("Win game");
         winScreen.SetActive(true);
-        //QuitButton.SetActive(true); // not able to be pressed 
-
         Time.timeScale = 0;
     }
 }
-// FIXME: after reloading game scene, player can only move once. press continue to reset that bug.

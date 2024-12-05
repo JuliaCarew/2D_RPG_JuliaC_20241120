@@ -4,120 +4,133 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Combat : MonoBehaviour // FIXME: player stops taking input after y: 6
+public class Combat : MonoBehaviour 
 {
+    public GameObject player;
+
     [Header("References")]
-    public MovePlayer movePlayer;
     public LoadMap loadMap;
     public Tilemap myTilemap;
-    public HealthSystem playerHealthSystem;
-    public HealthSystem enemyHealthSystem;
     public EnemyController enemy;
 
-    [Header("Game Objects")]
-    public GameObject gameOverUI;
-
     [Header("Turn Handler")]
-    public bool enemyTurn; // enemies take turns when true, player takes turn when false
+    public bool enemyTurn = false; // enemies take turns when true, player takes turn when false
     public float turnDelay = 0.2f;
 
-    void Start()
-    {
-        if (enemyTurn == false)
-        {
-            PlayerTookTurn();
-        }
-        if (enemyTurn == true)
-        {
-            EnemyTurn();
-        }
-
-        enemyTurn = false;
-        gameOverUI.SetActive(false);
-    }
-   
     // ---------- PLAYER TURN ---------- // 
-    public void PlayerTookTurn()
+    public void PlayerCompletedAction()
     {
-        //enemyTurn = false;
-
-        Debug.Log("Player's turn");
-
-        if (HasTargetNeighbor())
+        if (!enemyTurn)
         {
-            Debug.Log("Player attacks enemy!");
-            PlayerAttacksEnemy(playerHealthSystem.playerDamage);
-            enemyTurn = true;
-
-            if (enemy.healthSystem.currentHealth <= 0)
-            {
-                Debug.Log("Enemy defeated!");
-                myTilemap.SetTile(enemy.enemyPosition, null);
-                Destroy(enemy.gameObject);
-            }
+            EnemyTurn(); // Trigger enemy turn immediately after player's action
         }
-        EnemyTurn();
     }
 
     // ---------- ENEMY TURN ---------- //
     public void EnemyTurn() 
     {
-        //enemyTurn = true;
-
         Debug.Log("Enemy's turn");
-
-        Vector3Int playerPosition = Vector3Int.RoundToInt(movePlayer.movePoint.position);
 
         if (HasTargetNeighbor())
         {
-            Debug.Log("Enemy attacks player!");
+            Debug.Log("enemy attacks player!");
             EnemyAttacksPlayer(enemy.enemyDamage);
-            enemyTurn = false;
+
+            if (loadMap.playerHealthSystemref.currentHealth <= 0)
+            {
+                Debug.Log("Player defeated!");
+                return;
+            }
+        }
+        enemy.MoveTowardsPlayer();
+        enemyTurn = false;
+    }
+
+    // ---------- ATTACK HANDLERS ---------- //
+    public void EnemyAttacksPlayer(int enemyDamage)
+    {
+        if (loadMap.playerHealthSystemref != null)
+        {
+            loadMap.playerHealthSystemref.TakeDamage(enemyDamage);
+            Debug.Log("Enemy attacks! Player takes " + enemyDamage + " damage.");
+        }
+    }
+    public void PlayerAttacksEnemy(int playerDamage)
+    {
+        if (enemy != null && enemy.healthSystemref != null)
+        {
+            if (NextToEnemy())
+            {
+                enemy.healthSystemref.TakeDamage(playerDamage);
+                Debug.Log("Player attacks! Enemy takes " + playerDamage + " damage.");
+                
+                if (enemy.healthSystemref.currentHealth <= 0)
+                {
+                    Debug.Log("Enemy defeated!");
+                    myTilemap.SetTile(loadMap.enemyPosition, null);
+                    Destroy(enemy.gameObject);
+                }
+            } 
         }
     }
 
     // ---------- CHECK NEIGHBOR ---------- //
-    private bool HasTargetNeighbor() // right now is checking grid which had bigger tiles, take from player movement?
+    private bool HasTargetNeighbor() 
     {
+        Vector3Int playerTilePosition = myTilemap.WorldToCell(loadMap.movePlayerref.movePoint.position);
+
         for (int x = -1; x <= 1; x++)
         {
             for (int y = -1; y <= 1; y++)
             {
-                // Skip the center tile
                 if (x == 0 && y == 0)
                 continue;
 
-                Vector3Int cellPosition = new Vector3Int(x, y, 0);
-                // Get the tile at the specified grid position
-                var tileAtPosition = myTilemap.WorldToCell(cellPosition);
-
-                Vector3Int checkPosition = tileAtPosition + new Vector3Int(x, y, 0);
+                Vector3Int checkPosition = enemyTurn 
+                    ? playerTilePosition + new Vector3Int(x, y, 0) // enemy checks near the player
+                    : loadMap.enemyPosition + new Vector3Int(x, y, 0); // player checks near enemy
 
                 // Compare the target position to the adjacent positions
-                if (checkPosition == enemy.enemyPosition || checkPosition == movePlayer.movePoint.position)
+                if (checkPosition == playerTilePosition && !enemyTurn)
                 {
-                    Debug.Log($"Target found at {checkPosition}");
+                    Debug.Log($"Player found enemy at {checkPosition}");
+                    return true;
+                }
+                if (checkPosition == loadMap.enemyPosition && enemyTurn)
+                {
+                    Debug.Log($"Enemy found player at {checkPosition}");
                     return true;
                 }
             }
         }
         return false;
     }
+    public bool NextToEnemy()
+    {
+        Vector3Int playerPosition = myTilemap.WorldToCell(loadMap.movePlayerref.movePoint.position);
 
-    // ---------- ATTACK HANDLERS ---------- //
-    public void EnemyAttacksPlayer(int enemyDamage)
-    {
-        playerHealthSystem.TakeDamage(enemyDamage);
-        Debug.Log("Player takes " + enemyDamage + " damage.");
-        if (playerHealthSystem.currentHealth <= 0)
+        for (int x = -1; x <= 1; x++)
         {
-            Debug.Log("Player has died! Game Over.");
-            gameOverUI.SetActive(true); // Show GameOver UI
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                continue;
+
+                Vector3Int checkPosition = playerPosition + new Vector3Int(x, y, 0);
+            
+                TileBase tileAtPosition = myTilemap.GetTile(checkPosition);
+
+                Debug.Log($"Player is checking tile at ({checkPosition.x}, {checkPosition.y}): {tileAtPosition}");
+
+                // Check if this tile is an enemy tile
+                if (tileAtPosition == loadMap._enemy)
+                {
+                    Debug.Log("Player found enemy");
+                    PlayerAttacksEnemy(enemy.healthSystemref.playerDamage);
+                    return true; 
+                }
+            }
         }
-    }
-    public void PlayerAttacksEnemy(int playerDamage)
-    {
-        enemyHealthSystem.TakeDamage(playerDamage);
-        Debug.Log("Enemy takes " + playerDamage + " damage.");
+        return false;
     }
 }

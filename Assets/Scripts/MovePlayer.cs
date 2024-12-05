@@ -33,6 +33,7 @@ public class MovePlayer : MonoBehaviour
         }
         MovePosition();
     }
+
     // ---------- CHECK MOVE TILE ---------- //
     public bool CanMove(int x, int y)
     {
@@ -61,7 +62,6 @@ public class MovePlayer : MonoBehaviour
         }
         if (tileAtPosition == loadMap._enemy)
         {
-            //combat.enemyTurn = true; //FIXME: BROKENNNNNN needs to trigger enemy's turn
             Debug.Log($"Player is blocked by ENEMY at ({x}, {y}): {tileAtPosition}");
             return false;
         }
@@ -76,6 +76,16 @@ public class MovePlayer : MonoBehaviour
     // ---------- RESET PLAYER ---------- // 
     public void ResetPosition() // set player to start position whenever completing a level
     {
+        // Before moving, clear any previous player tile
+        int previousX = Mathf.RoundToInt(movePoint.position.x / tileSize);
+        int previousY = Mathf.RoundToInt(movePoint.position.y / tileSize);
+        Vector3Int previousPosition = new Vector3Int(previousX, previousY, 0);
+        
+        if (myTilemap.HasTile(previousPosition)) 
+        {
+            myTilemap.SetTile(previousPosition, null);  // Remove the player tile from the old position
+        }
+
         Vector3 spawnPosition = playerSpawnPoint.transform.position;
         movePoint.position = new Vector3(
             Mathf.Round(spawnPosition.x / tileSize) * tileSize,
@@ -122,6 +132,12 @@ public class MovePlayer : MonoBehaviour
             );     
             DrawPlayer(playerX, playerY, targetX, targetY);  // Draw the player at the new position
             Debug.Log($"Player moved to new position: {targetX}, {targetY}");
+
+            // if(combat.NextToEnemy()) not working :/
+            // {
+            //     combat.PlayerAttacksEnemy(loadMap.healthSystemref.playerDamage);
+            // }
+            combat.PlayerCompletedAction();
         }
         else
         {
@@ -151,5 +167,11 @@ public class MovePlayer : MonoBehaviour
         }
         // Place the player tile at the new position
         myTilemap.SetTile(currentPosition, playerTile);
+
+        foreach (EnemyController enemyref in FindObjectsOfType<EnemyController>())
+        {
+            enemyref.MoveTowardsPlayer();
+        }
+        myTilemap.RefreshAllTiles();
     }
 }

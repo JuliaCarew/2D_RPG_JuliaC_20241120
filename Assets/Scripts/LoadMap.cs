@@ -6,9 +6,17 @@ using System.IO;
 
 public class LoadMap : MonoBehaviour
 {
+    [Header("References")]
+    public HealthSystem healthSystemref;
+    public HealthSystem playerHealthSystemref;
+
+    public EnemyController enemyref;
+    public Combat combatref;
+    public MovePlayer movePlayerref;
+
     [Header("Transform & GameObjects")]
     public Transform mapCenter;
-    public GameObject enemyPrefab;
+    public Vector3Int enemyPosition;
 
     [Header("Tilemap & Tiles")]
     public Tilemap myTilemap;
@@ -34,10 +42,6 @@ public class LoadMap : MonoBehaviour
     void Start()
     {
         //Debug.Log("Loading premade map...");
-        if (enemyPrefab != null)
-        {
-            Destroy(enemyPrefab);
-        }
         LoadPremadeMap();  
     }
 
@@ -45,14 +49,14 @@ public class LoadMap : MonoBehaviour
     public void LoadPremadeMap()
     {
         //Debug.Log("reading text file");
-        string folderPath = $"{Application.dataPath}/2DMapStrings"; // in the Unity Assets folder, then path to folder, 
+        string folderPath = Path.Combine(Application.streamingAssetsPath, "2DMapStrings");
         string[] mapFiles = Directory.GetFiles(folderPath, "*.txt"); // Get all text files
+        
         // get random text file
         int randomIndex = Random.Range(0, mapFiles.Length);
         string selectedFile = mapFiles[randomIndex];
-        //Debug.Log($"Selected map {selectedFile}");
-
         string[] myLines = File.ReadAllLines(selectedFile); // create string from all idv. lines read
+ 
         mapHeight = myLines.Length;
         mapWidth = myLines[0].Length;
 
@@ -65,8 +69,14 @@ public class LoadMap : MonoBehaviour
             0
         );
 
+        GameObject existingEnemy = GameObject.Find("Enemy");
+        if (existingEnemy != null)
+        {
+            Destroy(existingEnemy);
+        }
+
         // placing tiles
-        for (int y = myLines.Length - 1; y>= 0; y--) // from mylines.length until it reaches 0 (to reverse it), still not flipped, maybe myLines ?
+        for (int y = myLines.Length - 1; y>= 0; y--) 
         {
             string myLine = myLines[y]; // so each line gets read in proper order one-by-one
             //Debug.Log($"Reading Line: {myLine} at {-y}");
@@ -89,11 +99,33 @@ public class LoadMap : MonoBehaviour
                         myTilemap.SetTile(position, _chest);
                         break;
                     case '@':
-                        myTilemap.SetTile(position, _enemy);
-                        //if (enemyPrefab != null)
-                        //{
-                        //    InitializeEnemy(position);
-                        //}
+                        // Instantiate Enemy GameObject
+                        GameObject enemyObject = new GameObject("Enemy");
+                        EnemyController enemyController = enemyObject.AddComponent<EnemyController>();
+                        HealthSystem enemyHealthSystem = enemyObject.AddComponent<HealthSystem>();
+                        
+                        // assign enemycontroller variables to avoid null reference exception when instantiated
+                        enemyController.loadMap = this; 
+                        enemyController.enemyTile = _enemy;
+                        enemyController.playerTile = movePlayerref.playerTile; 
+                        enemyController.enemyPosition = position;
+                        // assign HealthSystem and its references
+                        enemyHealthSystem.loadMap = this;
+                        enemyHealthSystem.tilePosition = position;
+                        enemyController.healthSystemref = enemyHealthSystem;
+                        enemyHealthSystem.enemyController = enemyController;
+                        // assigning Combat and Player references 
+                        enemyController.loadMap.combatref = combatref;
+                        enemyController.loadMap.movePlayerref = movePlayerref;
+                        // assigning UI elements
+                        enemyHealthSystem.enemyhealthText = healthSystemref.enemyhealthText;
+                        enemyHealthSystem.healthText = healthSystemref.healthText;
+                        enemyHealthSystem.gameOverUI = healthSystemref.gameOverUI;
+
+                        // set enemy position on the Tilemap
+                        myTilemap.SetTile(position, _enemy);  // place enemy tile on map
+                        enemyObject.transform.position = myTilemap.CellToWorld(position); // match enemy to world position
+
                         break;
                     case ' ':
                         myTilemap.SetTile(position, null);
@@ -104,26 +136,5 @@ public class LoadMap : MonoBehaviour
                 }
             }
         }
-    }
-
-    // ---------- SET ENEMY GAME OBJECT ---------- // enemy needs to be spawned at the map's location REFRESH position every time
-    void InitializeEnemy(Vector3Int position) // enemy tile can be assigned a script w/o needing a gameobject?
-    {
-        Vector3 worldPosition = myTilemap.GetCellCenterWorld(position); // FIXME:
-        // Instantiate the enemy prefab at the corresponding world position
-        GameObject enemy = Instantiate(enemyPrefab, worldPosition, Quaternion.identity);
-
-        // Ensure the prefab has the necessary scripts and initialize them
-        EnemyController enemyController = enemy.GetComponent<EnemyController>();
-        if (enemyController != null)
-        {
-            enemyController.Initialize(position);
-        }
-        else
-        {
-            Debug.LogError("Enemy prefab does not have an EnemyController script!");
-        }
-        myTilemap.SetTile(position, null);
-        Debug.Log($"Enemy placed at {position}");
     }
 }
