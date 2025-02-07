@@ -126,7 +126,7 @@ public class Combat : MonoBehaviour
                 if (tileAtPosition == loadMap._enemy)
                 {
                     Debug.Log("Player found enemy");
-                    PlayerAttacksEnemy(enemy.healthSystemref.playerDamage);
+                    //PlayerAttacksEnemy(enemy.healthSystemref.playerDamage);
                     return true; 
                 }
             }

@@ -133,10 +133,6 @@ public class MovePlayer : MonoBehaviour
             DrawPlayer(playerX, playerY, targetX, targetY);  // Draw the player at the new position
             Debug.Log($"Player moved to new position: {targetX}, {targetY}");
 
-            // if(combat.NextToEnemy()) not working :/
-            // {
-            //     combat.PlayerAttacksEnemy(loadMap.healthSystemref.playerDamage);
-            // }
             combat.PlayerCompletedAction();
         }
         else
